@@ -135,10 +135,8 @@ def test_with_random_data(random_dataframe):
     df = random_dataframe
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 
-    # Stable
+    # Check if any warnings of errors are thrown. Might be an unstable test
     df['zs'] = am.z_score(df)
     df['di'] = am.dice(df)
     df['mi'] = am.mutual_information(df)
-
-    # TODO:
-    # df['ll'] = am.log_likelihood(df)
+    df['ll'] = am.log_likelihood(df)

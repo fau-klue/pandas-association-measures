@@ -56,7 +56,6 @@ def z_score(df):
     if 'E11' not in df.columns:
         return np.nan
 
-    # TODO: Avoid divide by zero
     res = (df['O11'] - df['E11']) / np.sqrt(df['E11'])
 
     return pd.Series(data=res)
@@ -94,10 +93,12 @@ def log_likelihood(df):
     if 'E11' not in df.columns:
         return np.nan
 
-    ii = df['O11'] * np.ma.log(df['O11'].values / df['E11'].values).filled(0)
-    ij = df['O12'] * np.ma.log(df['O12'].values / df['E12'].values).filled(0)
-    ji = df['O21'] * np.ma.log(df['O21'].values / df['E21'].values).filled(0)
-    jj = df['O22'] * np.ma.log(df['O22'].values / df['E22'].values).filled(0)
+    # TODO: ist this OK?
+    with np.errstate(divide='ignore', invalid='ignore'):
+        ii = df['O11'] * np.log(df['O11'] / df['E11'].replace(0, np.nan))
+        ij = df['O12'] * np.log(df['O12'] / df['E12'].replace(0, np.nan))
+        ji = df['O21'] * np.log(df['O21'] / df['E21'].replace(0, np.nan))
+        jj = df['O22'] * np.log(df['O22'] / df['E22'].replace(0, np.nan))
 
     res = 2 * pd.concat([ii, ij, ji, jj], axis=1).sum(1)
 
