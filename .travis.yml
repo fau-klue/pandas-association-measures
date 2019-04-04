@@ -3,7 +3,8 @@ language: python
 python:
   - '3.6'
   - '3.7'
-  - nightly
+  - '3.8-dev'
+  - 'nightly'
 install:
   - pip3 install -q pipenv
   - make install
