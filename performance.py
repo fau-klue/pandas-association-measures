@@ -52,6 +52,20 @@ df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 df['am'] = am.mutual_information(df)
     '''
     },
+    {
+    'name': 'dice',
+    'code': '''
+df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+df['am'] = am.dice(df)
+    '''
+    },
+    {
+    'name': 'log_likelihood',
+    'code': '''
+df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+df['am'] = am.log_likelihood(df)
+    '''
+    },
 ]
 
 for code in codes:

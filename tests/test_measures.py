@@ -25,6 +25,16 @@ def sample_dataframe():
     return df
 
 
+@pytest.fixture(scope='function')
+def zero_dataframe():
+    """ Sample DataFrame with zero data"""
+    df = pd.DataFrame({'f1': np.zeros(10),
+                       'f2': np.zeros(10),
+                       'O11': np.zeros(10),
+                       'N': np.zeros(10)})
+    return df
+
+
 def test_contigency_table(sample_dataframe):
     df = sample_dataframe
 
@@ -48,7 +58,7 @@ def test_mutual_information(sample_dataframe):
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 
     df['am'] = am.mutual_information(df)
-    assert df['am'][0] == 3.321928094887362
+    assert df['am'][0] == 2.302585092994046
 
 
 def test_z_score(sample_dataframe):
@@ -66,10 +76,49 @@ def test_z_score(sample_dataframe):
 def test_dice(sample_dataframe):
     df = sample_dataframe
 
-    df['am'] = am.dice(df)
-    assert np.isnan(df['am'][0])
-
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 
     df['am'] = am.dice(df)
     assert df['am'][0] == 1.0
+
+
+def test_log_likelihood(sample_dataframe):
+    df = sample_dataframe
+
+    df['am'] = am.log_likelihood(df)
+    assert np.isnan(df['am'][0])
+
+    df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+
+    df['am'] = am.log_likelihood(df)
+    assert df['am'][0] == 95.98619401130345
+
+
+def test_log_likelihood_with_zeros(zero_dataframe):
+    df = zero_dataframe
+    df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+
+    df['am'] = am.log_likelihood(df)
+    assert df['am'][0] == 0.0
+
+
+def test_dice_with_zeros(zero_dataframe):
+    df = zero_dataframe
+    df['am'] = am.dice(df)
+    assert np.isnan(df['am'][0])
+
+
+def test_z_score_with_zeros(zero_dataframe):
+    df = zero_dataframe
+    df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+
+    df['am'] = am.z_score(df)
+    assert np.isnan(df['am'][0])
+
+
+def test_mutual_information_with_zeros(zero_dataframe):
+    df = zero_dataframe
+    df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+
+    df['am'] = am.mutual_information(df)
+    assert np.isnan(df['am'][0])
