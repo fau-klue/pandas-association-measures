@@ -25,29 +25,35 @@ df['O11'], df['O12'], df['O21'], df['O22'] = am.contingency_table(df)
 """
 
 # code snippet whose execution time is to be measured
-code_1 = '''
+codes = [
+    {
+    'name': 'contingency_table',
+    'code': '''
 df['O11'], df['O12'], df['O21'], df['O22'] = am.contingency_table(df)
-'''
-
-code_2 = '''
+    '''
+    },
+    {
+    'name': 'expected_frequencies',
+    'code': '''
 df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
-'''
-
-code_3 = '''
+    '''
+    },
+    {
+    'name': 'z_score',
+    'code': '''
 df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 df['am'] = am.z_score(df)
-'''
-
-code_4 = '''
+    '''
+    },
+    {
+    'name': 'mutual_information',
+    'code': '''
 df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 df['am'] = am.mutual_information(df)
-'''
+    '''
+    },
+]
 
-res1 = timeit.timeit(setup=setup, stmt=code_1, number=iterations)
-print('Calculate contingency_table (iterations={iter}): {res}'.format(iter=iterations, res=res1))
-res2 = timeit.timeit(setup=setup, stmt=code_2, number=iterations)
-print('Calculate expected_frequencies (iterations={iter}): {res}'.format(iter=iterations, res=res2))
-res3 = timeit.timeit(setup=setup, stmt=code_3, number=iterations)
-print('Calculate z_score (iterations={iter}): {res}'.format(iter=iterations, res=res3))
-res4 = timeit.timeit(setup=setup, stmt=code_4, number=iterations)
-print('Calculate MI (iterations={iter}): {res}'.format(iter=iterations, res=res4))
+for code in codes:
+    res = timeit.timeit(setup=setup, stmt=code['code'], number=iterations)
+    print('Calculate {func} (iterations={iter}, df_size={size}): {res}'.format(iter=iterations, size=10, res=res, func=code['name']))
