@@ -31,6 +31,7 @@ def test_contigency_table(sample_dataframe):
     df['O11'], df['O12'], df['O21'], df['O22'] = am.contingency_table(df)
     # TODO: assert
 
+
 def test_expected_frequencies(sample_dataframe):
     df = sample_dataframe
 
@@ -40,18 +41,35 @@ def test_expected_frequencies(sample_dataframe):
 
 def test_mutual_information(sample_dataframe):
     df = sample_dataframe
+
+    df['am'] = am.mutual_information(df)
+    assert np.isnan(df['am'][0])
+
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 
-    df['am'] = am.z_score(df)
     df['am'] = am.mutual_information(df)
-
-
     assert df['am'][0] == 3.321928094887362
 
 
 def test_z_score(sample_dataframe):
     df = sample_dataframe
+
+    df['am'] = am.z_score(df)
+    assert np.isnan(df['am'][0])
+
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 
     df['am'] = am.z_score(df)
     assert df['am'][0] == 9.0
+
+
+def test_dice(sample_dataframe):
+    df = sample_dataframe
+
+    df['am'] = am.dice(df)
+    assert np.isnan(df['am'][0])
+
+    df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+
+    df['am'] = am.dice(df)
+    assert df['am'][0] == 1.0

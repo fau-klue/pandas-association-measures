@@ -72,3 +72,16 @@ def mutual_information(df):
     res = np.log2(df['O11'] / df['E11'])
 
     return pd.Series(data=res)
+
+
+def dice(df):
+    """
+    Calculate Dice coefficient
+    """
+
+    if 'E11' not in df.columns:
+        return np.nan
+
+    res = (2 * df['O11']) / (df['f1'] + df['f2'])
+
+    return pd.Series(data=res)
