@@ -80,9 +80,6 @@ def dice(df):
     Calculate Dice coefficient
     """
 
-    if 'E11' not in df.columns:
-        return np.nan
-
     res = (2 * df['O11']) / (df['f1'] + df['f2'])
 
     return pd.Series(data=res)
@@ -96,10 +93,10 @@ def log_likelihood(df):
     if 'E11' not in df.columns:
         return np.nan
 
-    ii = df['O11'] * np.ma.log(df['O11'].values / df['E11'].values)
-    ij = df['O12'] * np.ma.log(df['O12'].values / df['E12'].values)
-    ji = df['O21'] * np.ma.log(df['O21'].values / df['E21'].values)
-    jj = df['O22'] * np.ma.log(df['O22'].values / df['E22'].values)
+    ii = df['O11'] * np.ma.log(df['O11'].values / df['E11'].values).filled(0)
+    ij = df['O12'] * np.ma.log(df['O12'].values / df['E12'].values).filled(0)
+    ji = df['O21'] * np.ma.log(df['O21'].values / df['E21'].values).filled(0)
+    jj = df['O22'] * np.ma.log(df['O22'].values / df['E22'].values).filled(0)
 
     res = 2 * pd.concat([ii, ij, ji, jj], axis=1).sum(1)
 
