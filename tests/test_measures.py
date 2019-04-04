@@ -39,7 +39,10 @@ def test_contigency_table(sample_dataframe):
     df = sample_dataframe
 
     df['O11'], df['O12'], df['O21'], df['O22'] = am.contingency_table(df)
-    # TODO: assert
+    assert df['O11'][0] == 10
+    assert df['O12'][0] == 0
+    assert df['O21'][0] == 0
+    assert df['O22'][0] == 70
 
 
 def test_expected_frequencies(sample_dataframe):
