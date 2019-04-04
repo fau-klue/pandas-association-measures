@@ -20,6 +20,12 @@ def contingency_table(row):
     :return: pandas.Series containing O12, O21, O22
     :rtype: pandas.Series
     """
+
+    # Way faster:
+    # df['O12'] = df['f1'] - df['O11']
+    # df['O21'] = df['f2'] - df['O11']
+    # df['O22'] = df['N'] - (df['f1'] + df['f2'] + df['O11'])
+
     O12 = row['f1'] - row['O11']
     O21 = row['f2'] - row['O11']
     O22 = row['N'] - (row['f1'] + row['f2'] + row['O11'])
@@ -31,6 +37,8 @@ def expected_frequencies(row):
     Calculate expected frequencies for observed frequencies.
     """
     # TODO: Should I do this in one step with the other data to avoid another iteration?
+    # TODO: This is way faster: df['E11'] = (df['f1'] * df['f2']) / df['N']
+
     return (row['f1'] * row['f2']) / row['N']
 
 
