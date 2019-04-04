@@ -70,7 +70,8 @@ def mutual_information(df):
     if 'E11' not in df.columns:
         return np.nan
 
-    res = np.ma.log(df['O11'].values / df['E11'].values)
+    diff = df['E11'].replace(0, np.nan) / df['O11'].replace(0, np.nan)
+    res = np.log(diff.replace(0.0, np.nan))
 
     return pd.Series(data=res)
 

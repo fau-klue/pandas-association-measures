@@ -47,8 +47,8 @@ def test_contigency_table(sample_dataframe):
 
 def test_expected_frequencies(sample_dataframe):
     df = sample_dataframe
-
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+
     assert df['E11'][0] == 1.0
 
 
@@ -61,7 +61,7 @@ def test_mutual_information(sample_dataframe):
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 
     df['am'] = am.mutual_information(df)
-    assert df['am'][0] == 2.302585092994046
+    assert df['am'][0] == -2.3025850929940455
 
 
 def test_z_score(sample_dataframe):
@@ -97,6 +97,7 @@ def test_log_likelihood(sample_dataframe):
     assert df['am'][0] == 95.98619401130345
 
 
+@pytest.mark.zero
 def test_log_likelihood_with_zeros(zero_dataframe):
     df = zero_dataframe
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
@@ -105,12 +106,14 @@ def test_log_likelihood_with_zeros(zero_dataframe):
     assert df['am'][0] == 0.0
 
 
+@pytest.mark.zero
 def test_dice_with_zeros(zero_dataframe):
     df = zero_dataframe
     df['am'] = am.dice(df)
     assert np.isnan(df['am'][0])
 
 
+@pytest.mark.zero
 def test_z_score_with_zeros(zero_dataframe):
     df = zero_dataframe
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
@@ -118,10 +121,24 @@ def test_z_score_with_zeros(zero_dataframe):
     df['am'] = am.z_score(df)
     assert np.isnan(df['am'][0])
 
-
+@pytest.mark.zero
 def test_mutual_information_with_zeros(zero_dataframe):
     df = zero_dataframe
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 
     df['am'] = am.mutual_information(df)
     assert np.isnan(df['am'][0])
+
+
+@pytest.mark.stability
+def test_with_random_data(random_dataframe):
+    df = random_dataframe
+    df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+
+    # Stable
+    df['zs'] = am.z_score(df)
+    df['di'] = am.dice(df)
+    df['mi'] = am.mutual_information(df)
+
+    # TODO:
+    # df['ll'] = am.log_likelihood(df)
