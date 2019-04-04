@@ -9,37 +9,32 @@ import pandas as pd
 import numpy as np
 
 
-def contingency_table(row):
+def contingency_table(f1, f2, O11, N):
     """
     Calculate contingency table for observed data.
     f1 = R1 = O11 + O12 (Anzahl Vorkommen von t1)
     f2 = C1 = O11 + O21 (Anzahl Vorkommen von t2)
     O11 = O (Anzahl gemeinsame Vorkommen von t1 und t2)
     N: Number of tokens in corpus
-    :param pandas.Series row: Pandas Series containing f1, f2, O11 and N
-    :return: pandas.Series containing O12, O21, O22
-    :rtype: pandas.Series
+    :return: Tuple of pandas.Series
+    :rtype: tuple
     """
 
-    # Way faster:
-    # df['O12'] = df['f1'] - df['O11']
-    # df['O21'] = df['f2'] - df['O11']
-    # df['O22'] = df['N'] - (df['f1'] + df['f2'] + df['O11'])
+    O12 = pd.Series(data=f1 - O11)
+    O21 = pd.Series(f2 - O11)
+    O22 = pd.Series(N - (f1 + f2 + O11))
 
-    O12 = row['f1'] - row['O11']
-    O21 = row['f2'] - row['O11']
-    O22 = row['N'] - (row['f1'] + row['f2'] + row['O11'])
-    return pd.Series([O12, O21, O22])
+    return (O12, O21, O22)
 
 
-def expected_frequencies(row):
+def expected_frequencies(f1, f2, N):
     """
     Calculate expected frequencies for observed frequencies.
     """
-    # TODO: Should I do this in one step with the other data to avoid another iteration?
-    # TODO: This is way faster: df['E11'] = (df['f1'] * df['f2']) / df['N']
 
-    return (row['f1'] * row['f2']) / row['N']
+    E11 = (f1 * f2) / N
+
+    return pd.Series(data=E11)
 
 
 def z_score(row):
