@@ -42,6 +42,13 @@ df['am'] = am.z_score(df)
     '''
     },
     {
+    'name': 't_score',
+    'code': '''
+df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+df['am'] = am.t_score(df)
+    '''
+    },
+    {
     'name': 'mutual_information',
     'code': '''
 df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)

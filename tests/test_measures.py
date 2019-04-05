@@ -76,6 +76,18 @@ def test_z_score(sample_dataframe):
     assert df['am'][0] == 9.0
 
 
+def test_t_score(sample_dataframe):
+    df = sample_dataframe
+
+    df['am'] = am.t_score(df)
+    assert np.isnan(df['am'][0])
+
+    df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+
+    df['am'] = am.t_score(df)
+    assert df['am'][0] == 2.846049894151541
+
+
 def test_dice(sample_dataframe):
     df = sample_dataframe
 
@@ -121,6 +133,16 @@ def test_z_score_with_zeros(zero_dataframe):
     df['am'] = am.z_score(df)
     assert np.isnan(df['am'][0])
 
+
+@pytest.mark.zero
+def test_t_score_with_zeros(zero_dataframe):
+    df = zero_dataframe
+    df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+
+    df['am'] = am.t_score(df)
+    assert np.isnan(df['am'][0])
+
+
 @pytest.mark.zero
 def test_mutual_information_with_zeros(zero_dataframe):
     df = zero_dataframe
@@ -136,6 +158,7 @@ def test_with_random_data(random_dataframe):
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 
     # Check if any warnings of errors are thrown. Might be an unstable test
+    df['ts'] = am.t_score(df)
     df['zs'] = am.z_score(df)
     df['di'] = am.dice(df)
     df['mi'] = am.mutual_information(df)

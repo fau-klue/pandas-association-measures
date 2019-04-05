@@ -61,6 +61,19 @@ def z_score(df):
     return pd.Series(data=res)
 
 
+def t_score(df):
+    """
+    Calculate t-score
+    """
+
+    if 'E11' not in df.columns:
+        return np.nan
+
+    res = (df['O11'] - df['E11']) / np.sqrt(df['O11'])
+
+    return pd.Series(data=res)
+
+
 def mutual_information(df):
     """
     Calculate Mutual Information
