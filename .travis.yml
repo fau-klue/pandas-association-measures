@@ -1,13 +1,22 @@
 dist: xenial
 language: python
-python:
-  - '3.6'
-  - '3.7'
-  # - '3.8-dev'
-  # - 'nightly'
+script:
+  - 'make $TEST'
 install:
   - pip3 install -q pipenv
   - make install
-script:
-  - make coverage
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: TEST='test'
+      python: 'nightly'
+  include:
+    - env: TEST='lint'
+      python: '3.6'
+    - env: TEST='coverage'
+      python: '3.6'
+    - env: TEST='test'
+      python: '3.7'
+    - env: TEST='test'
+      python: 'nightly'
 after_success: coveralls
