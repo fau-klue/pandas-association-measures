@@ -13,13 +13,9 @@ if len(sys.argv) > 1:
 # code snippet to be executed only once
 setup = """
 import pandas as pd
-import numpy as np
 import association.measures as am
 
-df = pd.DataFrame({'f1': np.random.randint(100, size=10),
-                   'f2': np.random.randint(100, size=10),
-                   'O11': np.random.randint(100, size=10),
-                   'N': [100] * 10})
+df = pd.read_csv('tests/brown.csv')
 
 df['O11'], df['O12'], df['O21'], df['O22'] = am.contingency_table(df)
 """
@@ -70,4 +66,4 @@ df['am'] = am.log_likelihood(df)
 
 for code in codes:
     res = timeit.timeit(setup=setup, stmt=code['code'], number=iterations)
-    print('Calculate {func} (iterations={iter}, df_size={size}): {res}'.format(iter=iterations, size=10, res=res, func=code['name']))
+    print('Calculate {func} (iterations={iter}, df_size={size}): {res}'.format(iter=iterations, size=24168, res=res, func=code['name']))
