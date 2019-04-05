@@ -1,0 +1,4 @@
+[report]
+omit =
+     association/__version__.py
+     tests/
