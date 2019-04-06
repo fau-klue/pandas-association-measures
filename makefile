@@ -5,7 +5,7 @@ performance:
 test:
 	pipenv run pytest -v
 lint:
-	pipenv run pylint --rcfile=.pylintrc association/*.py
+	pipenv run pylint --rcfile=.pylintrc association_measures/*.py
 coverage:
 	pipenv run pytest --cov-report term-missing -v --cov=association/
 build:
