@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 import numpy as np
 
-import association.measures as am
+import association_measures.measures as am
 
 
 @pytest.fixture(scope='function')

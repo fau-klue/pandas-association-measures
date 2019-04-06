@@ -13,7 +13,7 @@ if len(sys.argv) > 1:
 # code snippet to be executed only once
 setup = """
 import pandas as pd
-import association.measures as am
+import association_measures.measures as am
 
 df = pd.read_csv('tests/brown.csv')
 
