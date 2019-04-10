@@ -22,7 +22,7 @@ def contingency_table(df):
 
     O12 = pd.Series(data=df['f1'] - df['O11'])
     O21 = pd.Series(data=df['f2'] - df['O11'])
-    O22 = pd.Series(data=df['N'] - (df['f1'] + df['f2'] + df['O11']))
+    O22 = pd.Series(data=df['N'] - (df['O11'] + df['O12'] + df['O21']))
 
     return (df['O11'], O12, O21, O22)
 
