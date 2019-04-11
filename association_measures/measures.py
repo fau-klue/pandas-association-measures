@@ -48,7 +48,8 @@ def mutual_information(df):
     Calculate Mutual Information
 
     :param pandas.DataFrame df: Pandas Dataframe containing O11 and E11
-    :return: pandas.Series containing the Mutual Information score for each token
+    :return: pandas.Series containing the Mutual Information score for
+    each token
     :rtype: pandas.Series
     """
 
@@ -82,7 +83,8 @@ def log_likelihood(df):
     """
     Calculate log-likelihood
 
-    :param pandas.DataFrame df: Pandas Dataframe containing O11, O12, O21, O22, E11, E12, E21 and E22
+    :param pandas.DataFrame df: Pandas Dataframe containing O11, O12,
+    O21, O22, E11, E12, E21 and E22
     :return: pandas.Series containing the log-likelihood score for each token
     :rtype: pandas.Series
     """
@@ -99,3 +101,22 @@ def log_likelihood(df):
     res = 2 * pd.concat([ii, ij, ji, jj], axis=1).sum(1)
 
     return pd.Series(data=res)
+
+
+def calculate_measures(df, measures=None):
+    """
+    Calculate a list of association measures. Defaults to all available measures.
+
+    :param pandas.DataFrame df: Pandas Dataframe containing O11, O12,
+    O21, O22, E11, E12, E21 and E22
+    :return: pandas.DataFrame containing all available association measures
+    :rtype: pandas.DataFrame
+    """
+
+    if not measures:
+        measures = [z_score, t_score, dice, log_likelihood, mutual_information]
+
+    for measure in measures:
+        df[measure.__name__] = measure(df)
+
+    return df

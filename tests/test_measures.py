@@ -143,8 +143,9 @@ def test_log_likelihood_with_zeros(zero_dataframe):
 def test_with_random_data(random_dataframe):
     df = random_dataframe
 
-    df['ts'] = am.t_score(df)
-    df['zs'] = am.z_score(df)
-    df['di'] = am.dice(df)
-    df['mi'] = am.mutual_information(df)
-    df['ll'] = am.log_likelihood(df)
+    df = am.calculate_measures(df)
+    assert 't_score' in df.columns
+    assert 'z_score' in df.columns
+    assert 'dice' in df.columns
+    assert 'mutual_information' in df.columns
+    assert 'log_likelihood' in df.columns

@@ -46,4 +46,7 @@ df['E11'], df['E12'], df['E21'], df['E22'] = fq.expected_frequencies(df)
 
 # Calculate an association measure:
 df['am'] = am.mutual_information(df)
+
+# Calculate all association measure:
+df = am.calculate_measures(df)
 ```
