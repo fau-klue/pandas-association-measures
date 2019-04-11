@@ -35,13 +35,14 @@ From Source:
 Calculations:
 
 ```python
+import association_measures.frequencies as fq
 import association_measures.measures as am
 
 # Create the contigency table with the observed frequencies:
-df['O11'], df['O12'], df['O21'], df['O22'] = am.contingency_table(df)
+df['O11'], df['O12'], df['O21'], df['O22'] = fq.observed_frequencies(df)
 
 # Create the contigency table with the expected frequencies:
-df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
+df['E11'], df['E12'], df['E21'], df['E22'] = fq.expected_frequencies(df)
 
 # Calculate an association measure:
 df['am'] = am.mutual_information(df)
