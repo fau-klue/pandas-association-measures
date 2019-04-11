@@ -42,7 +42,7 @@ def test_contigency_table(sample_dataframe):
     assert df['O11'][0] == 10
     assert df['O12'][0] == 0
     assert df['O21'][0] == 0
-    assert df['O22'][0] == 70
+    assert df['O22'][0] == 90
 
 
 def test_expected_frequencies(sample_dataframe):
@@ -106,7 +106,7 @@ def test_log_likelihood(sample_dataframe):
     df['E11'], df['E12'], df['E21'], df['E22'] = am.expected_frequencies(df)
 
     df['am'] = am.log_likelihood(df)
-    assert df['am'][0] == 95.98619401130345
+    assert df['am'][0] == 65.01659467828966
 
 
 @pytest.mark.zero
