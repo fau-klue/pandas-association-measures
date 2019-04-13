@@ -11,4 +11,4 @@ coverage:
 build:
 	pipenv run python3 setup.py sdist
 clean:
-	pipenv clean; rm -rf *.egg-info
+	rm -rf *.egg-info build/
