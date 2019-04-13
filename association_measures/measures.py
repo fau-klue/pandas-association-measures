@@ -7,6 +7,10 @@ http://www.collocations.de/AM/index.html
 
 import pandas as pd
 import numpy as np
+from .binomial import choose as binomial
+
+
+choose = np.vectorize(binomial) # pylint: disable=invalid-name
 
 
 def z_score(df):
@@ -103,6 +107,28 @@ def log_likelihood(df):
     return pd.Series(data=res)
 
 
+def hypergeometric_likelihood(df):
+    """
+    Calculate hypergeometric-likelihood
+
+    :param pandas.DataFrame df: Pandas Dataframe containing O11, O12,
+    O21, O22, E11, E12, E21 and E22
+    :return: pandas.Series containing the hypergeometric-likelihood score for each token
+    :rtype: pandas.Series
+    """
+
+    if 'O11' not in df.columns:
+        return np.nan
+
+    # TODO: Is this correct?
+    res = (
+        choose(df['f2'], df['O11']) *
+        choose(df['O12'] + df['O22'], df['f1'] - df['O11'])
+    ) / choose(df['N'], df['f1'])
+
+    return pd.Series(data=res)
+
+
 def calculate_measures(df, measures=None):
     """
     Calculate a list of association measures. Defaults to all available measures.
@@ -114,7 +140,12 @@ def calculate_measures(df, measures=None):
     """
 
     if not measures:
-        measures = [z_score, t_score, dice, log_likelihood, mutual_information]
+        measures = [z_score,
+                    t_score,
+                    dice,
+                    log_likelihood,
+                    mutual_information,
+                    hypergeometric_likelihood]
 
     for measure in measures:
         df[measure.__name__] = measure(df)

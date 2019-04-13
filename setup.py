@@ -28,11 +28,11 @@ here = os.path.abspath(os.path.dirname(__file__))
 try:
     from Cython.Build import cythonize
     CYTHON_INSTALLED = True
-    extensions = [Extension('binomial', ['association_measures/binomial.pyx'])]
+    extensions = [Extension('association_measures.binomial', ['association_measures/binomial.pyx'])]
 except ImportError:
     cythonize = lambda x, *args, **kwargs: x # dummy func
     CYTHON_INSTALLED = False
-    extensions = [Extension('binomial', ['association_measures/binomial.c'])]
+    extensions = [Extension('association_measures.binomial', ['association_measures/binomial.c'])]
 
 
 # Import the README and use it as the long-description.

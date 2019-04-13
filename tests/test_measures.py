@@ -138,6 +138,31 @@ def test_log_likelihood_with_zeros(zero_dataframe):
     assert df['am'][0] == 0.0
 
 
+######
+# hypergeometric-likelihood #
+######
+
+def test_hypergeometric_likelihood(sample_dataframe):
+    df = sample_dataframe
+
+    df['am'] = am.hypergeometric_likelihood(df)
+    assert df['am'][0] == 8.938031057584301e-09
+
+
+def test_hypergeometric_likelihood_nan(invalid_dataframe):
+    df = invalid_dataframe
+
+    df['am'] = am.hypergeometric_likelihood(df)
+    assert np.isnan(df['am'][0])
+
+
+def test_hypergeometric_likelihood_with_zeros(zero_dataframe):
+    df = zero_dataframe
+
+    df['am'] = am.hypergeometric_likelihood(df)
+    assert df['am'][0] == 1.0
+
+
 # Check if any warnings of errors are thrown. Might be an unstable test
 @pytest.mark.stability
 def test_with_random_data(random_dataframe):
@@ -149,3 +174,4 @@ def test_with_random_data(random_dataframe):
     assert 'dice' in df.columns
     assert 'mutual_information' in df.columns
     assert 'log_likelihood' in df.columns
+    assert 'hypergeometric_likelihood' in df.columns
