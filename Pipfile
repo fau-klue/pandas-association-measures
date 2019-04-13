@@ -9,6 +9,7 @@ pytest-cov = "==2.6.1"
 coveralls = "==1.7.0"
 twine = "==1.13.0"
 pylint = "==2.3.1"
+cython = "==0.29.6"
 
 [packages]
 pandas = "*"

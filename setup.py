@@ -4,8 +4,9 @@
 import io
 import os
 import sys
-from setuptools import find_packages, setup, Command
-
+from setuptools import find_packages, Command
+from distutils.core import setup
+from distutils.extension import Extension
 
 # Package meta-data.
 NAME = 'association-measures'
@@ -21,6 +22,17 @@ REQUIRED = [
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
+
+
+# Import Cython if available
+try:
+    from Cython.Build import cythonize
+    CYTHON_INSTALLED = True
+    extensions = [Extension('binomial', ['association_measures/binomial.pyx'])]
+except ImportError:
+    cythonize = lambda x, *args, **kwargs: x # dummy func
+    CYTHON_INSTALLED = False
+    extensions = [Extension('binomial', ['association_measures/binomial.c'])]
 
 
 # Import the README and use it as the long-description.
@@ -85,6 +97,7 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(exclude=["tests", "test_*"]),
+    ext_modules=cythonize(extensions),
     install_requires=REQUIRED,
     include_package_data=True,
     license='MIT',
@@ -93,5 +106,6 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Cython',
     ],
 )
