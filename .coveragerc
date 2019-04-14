@@ -1,4 +1,4 @@
 [report]
 omit =
-     association/__version__.py
+     association_measures/__version__.py
      tests/

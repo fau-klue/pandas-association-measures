@@ -7,7 +7,7 @@ test:
 lint:
 	pipenv run pylint --rcfile=.pylintrc association_measures/*.py
 coverage:
-	pipenv run pytest --cov-report term-missing -v --cov=association/
+	pipenv run pytest --cov-report term-missing -v --cov=association_measures/
 compile:
 	pipenv run python3 setup.py build_ext --inplace
 build:
