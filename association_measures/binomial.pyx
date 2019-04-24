@@ -1,6 +1,6 @@
 #cython: cdivision=True
 
-def choose(int n, int k):
+cpdef int choose(int n, int k):
     """
     Binomial coefficient Cython implementation
     :param int n: n elements
