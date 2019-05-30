@@ -15,4 +15,4 @@ compile:
 build:
 	pipenv run python3 setup.py sdist
 clean:
-	rm -rf *.egg-info build/ association_measures/*.so association_measures/*.c
+	rm -rf *.egg-info build/ association_measures/*.so association_measures/*.c dist/

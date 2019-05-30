@@ -4,12 +4,13 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+coveralls = "==1.7.0"
+cython = "==0.29.6"
+pylint = "==2.3.1"
 pytest = "==4.4.0"
 pytest-cov = "==2.6.1"
-coveralls = "==1.7.0"
+requests = "==2.22.0"
 twine = "==1.13.0"
-pylint = "==2.3.1"
-cython = "==0.29.6"
 
 [packages]
 pandas = "*"
