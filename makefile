@@ -1,3 +1,5 @@
+.PHONY: performance test lint coverage build
+
 install:
 	pipenv install --dev
 performance:
