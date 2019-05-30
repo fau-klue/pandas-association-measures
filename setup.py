@@ -35,7 +35,12 @@ except ImportError:
     extensions = [Extension('association_measures.binomial', ['association_measures/binomial.c'])]
 
 
-# Import the README and use it as the long-description.
+LONG_DESCRIPTION = """
+Corpus association measures for Python pandas.
+
+Association measures are mathematical formulae that interpret cooccurrence frequency data. For each pair of words extracted from a corpus, they compute an association score, a single real value g that indicates the amount of (statistical) association between the two words.
+"""
+
 try:
     with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
         long_description = '\n' + f.read()
@@ -92,6 +97,7 @@ setup(
     name=NAME,
     version=about['__version__'],
     description=DESCRIPTION,
+    long_description=LONG_DESCRIPTION,
     author=AUTHOR,
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
