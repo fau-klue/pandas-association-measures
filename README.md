@@ -15,6 +15,10 @@ Using pip:
 
 From Source:
 
+    # Compile Cython code (requires Cython)
+    python setup.py build_ext --inplace
+
+    # Cython already compiled
     python setup.py install
 
 # Usage
@@ -49,4 +53,25 @@ df['am'] = am.mutual_information(df)
 
 # Calculate all association measure:
 df = am.calculate_measures(df)
+```
+
+# Development
+
+The package is tested using pylint and pytest.
+
+```bash
+# Installing dev requirements
+make install
+
+# Compile Cython code
+make compile
+
+# Lint
+make lint
+
+# Unittest
+make test
+
+# Coverage
+make coverage
 ```
