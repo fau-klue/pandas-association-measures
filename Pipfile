@@ -14,6 +14,3 @@ twine = "==1.13.0"
 
 [packages]
 pandas = "*"
-
-[requires]
-python_version = "3.5"

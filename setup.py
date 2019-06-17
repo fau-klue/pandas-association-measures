@@ -14,7 +14,7 @@ DESCRIPTION = 'Corpus association measures for Python pandas'
 URL = 'https://github.com/fau-klue/pandas-association-measures'
 EMAIL = 'markus@martialblog.de'
 AUTHOR = 'Markus Opolka'
-REQUIRES_PYTHON = '>=3.5.0'
+REQUIRES_PYTHON = '>=3'
 VERSION = None
 
 REQUIRED = [
