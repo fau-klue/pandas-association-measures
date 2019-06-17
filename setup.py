@@ -14,7 +14,7 @@ DESCRIPTION = 'Corpus association measures for Python pandas'
 URL = 'https://github.com/fau-klue/pandas-association-measures'
 EMAIL = 'markus@martialblog.de'
 AUTHOR = 'Markus Opolka'
-REQUIRES_PYTHON = '>=3.6.0'
+REQUIRES_PYTHON = '>=3.5.0'
 VERSION = None
 
 REQUIRED = [
@@ -112,6 +112,7 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Cython',
     ],
 )
