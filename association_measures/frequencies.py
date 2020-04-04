@@ -12,9 +12,8 @@ def observed_frequencies(df):
     """
     Calculate contingency table for observed data.
 
-    f1 = R1 = O11 + O12 (marginal frequencies)
-    f2 = C1 = O11 + O21 (marginal frequencies)
-    O11 = joint frequency
+    f1 = R1 = O11 + O12
+    f2 = C1 = O11 + O21
     N: Number of tokens in corpus
 
     :param pandas.DataFrame df: Pandas Dataframe containing O11, f1, f2 and N
@@ -41,8 +40,8 @@ def expected_frequencies(df):
     if 'O12' not in df.columns:
         df['O11'], df['O12'], df['O21'], df['O22'] = observed_frequencies(df)
 
-    R1 = df['f1'] # f1 Frequency
-    C1 = df['f2'] # f2 Frequency
+    R1 = df['f1']
+    C1 = df['f2']
     R2 = df['O21'] + df['O22']
     C2 = df['O12'] + df['O22']
 
