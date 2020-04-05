@@ -2,7 +2,6 @@ import pytest
 import numpy as np
 
 import association_measures.measures as am
-import association_measures.frequencies as fq
 
 
 ######
@@ -13,7 +12,7 @@ def test_mutual_information(sample_dataframe):
     df = sample_dataframe
 
     df['am'] = am.mutual_information(df)
-    assert df['am'][0] == -2.3025850929940455
+    assert df['am'][0] == 1.0
 
 
 @pytest.mark.nan
@@ -96,12 +95,14 @@ def test_z_score(sample_dataframe):
     df['am'] = am.z_score(df)
     assert df['am'][0] == 9.0
 
+
 @pytest.mark.nan
 def test_z_score_nan(invalid_dataframe):
     df = invalid_dataframe
 
     df['am'] = am.z_score(df)
     assert np.isnan(df['am'][0])
+
 
 @pytest.mark.zero
 def test_z_score_with_zeros(zero_dataframe):
