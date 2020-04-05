@@ -10,7 +10,7 @@ import numpy as np
 from .binomial import choose as binomial
 
 
-choose = np.vectorize(binomial) # pylint: disable=invalid-name
+choose = np.vectorize(binomial)  # pylint: disable=invalid-name
 
 
 def z_score(df):
@@ -60,8 +60,8 @@ def mutual_information(df):
     if 'E11' not in df.columns:
         return np.nan
 
-    diff = df['E11'].replace(0, np.nan) / df['O11'].replace(0, np.nan)
-    res = np.log(diff.replace(0.0, np.nan))
+    diff = df['O11'].replace(0, np.nan) / df['E11'].replace(0, np.nan)
+    res = np.log10(diff.replace(0.0, np.nan))
 
     return pd.Series(data=res)
 
@@ -103,6 +103,7 @@ def log_likelihood(df):
         jj = df['O22'] * np.log(df['O22'] / df['E22'].replace(0, np.nan))
 
     res = 2 * pd.concat([ii, ij, ji, jj], axis=1).sum(1)
+    res = np.sign(df['O11'] - df['E11']) * res
 
     return pd.Series(data=res)
 
@@ -129,6 +130,13 @@ def hypergeometric_likelihood(df):
     return pd.Series(data=res)
 
 
+def log_ratio(df):
+    C1 = df['O11'] + df['O21']
+    C2 = df['O12'] + df['O22']
+    ratio = df['O11'] / C1 / (df['O12'] / C2)
+    return pd.Series(data=np.log2(ratio))
+
+
 def calculate_measures(df, measures=None):
     """
     Calculate a list of association measures. Defaults to all available measures.
@@ -145,7 +153,8 @@ def calculate_measures(df, measures=None):
                     dice,
                     log_likelihood,
                     mutual_information,
-                    hypergeometric_likelihood]
+                    hypergeometric_likelihood,
+                    log_ratio]
 
     for measure in measures:
         df[measure.__name__] = measure(df)
