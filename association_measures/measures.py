@@ -8,6 +8,7 @@ http://www.collocations.de/AM/index.html
 import pandas as pd
 import numpy as np
 from .binomial import choose as binomial
+from .frequencies import expected_frequencies
 
 
 choose = np.vectorize(binomial)  # pylint: disable=invalid-name
@@ -137,25 +138,43 @@ def log_ratio(df):
     return pd.Series(data=np.log2(ratio))
 
 
-def calculate_measures(df, measures=None):
+def calculate_measures(df, measures=None, inplace=True):
     """
     Calculate a list of association measures. Defaults to all available measures.
 
-    :param pandas.DataFrame df: Pandas Dataframe containing O11, O12,
-    O21, O22, E11, E12, E21 and E22
-    :return: pandas.DataFrame containing all available association measures
+    :param pandas.DataFrame df: Dataframe with reasonably-named freq. signature
+    :param measures list: names of AMs (or AMs)
+    :return: pandas.DataFrame with association measures
     :rtype: pandas.DataFrame
     """
 
-    if not measures:
-        measures = [z_score,
-                    t_score,
-                    dice,
-                    log_likelihood,
-                    mutual_information,
-                    hypergeometric_likelihood,
-                    log_ratio]
+    # inplace?
+    if not inplace:
+        df = df.copy()
 
+    # implemented measures
+    ams_all = {
+        'z_score': z_score,
+        't_score': t_score,
+        'dice': dice,
+        'log_likelihood': log_likelihood,
+        'mutual_information': mutual_information,
+        'log_ratio': log_ratio,
+        'hypergeometric_likelihood': hypergeometric_likelihood
+    }
+
+    # check for expected frequencies
+    if not (df.columns.isin(['E11', 'E12', 'E21', 'E22']).all()):
+        df['E11'], df['E12'], df['E21'], df['E22'] = expected_frequencies(df, inplace)
+
+    # select measures
+    if measures is not None:
+        if type(measures[0]) == str:
+            measures = [ams_all[k] for k in measures if k in ams_all.keys()]
+    else:
+        measures = [ams_all[k] for k in ams_all.keys()]
+
+    # calculate measures
     for measure in measures:
         df[measure.__name__] = measure(df)
 
