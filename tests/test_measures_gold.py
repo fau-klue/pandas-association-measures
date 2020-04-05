@@ -56,11 +56,6 @@ def test_measures():
     df = read_csv("tests/ucs-gold.ds.gz", comment='#', index_col=0,
                   sep="\t", quoting=3, keep_default_na=False)
 
-    # TODO: avoid this
-    df['O11'] = df['f']
-    df['O11'], df['O12'], df['O21'], df['O22'] = fq.observed_frequencies(df)
-    df['E11'], df['E12'], df['E21'], df['E22'] = fq.expected_frequencies(df)
-
     # ucs-measures: am.*
     # print([t for t in df.columns if t.startswith('am')])
     # 'am.Dice',
