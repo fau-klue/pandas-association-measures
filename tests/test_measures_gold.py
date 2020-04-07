@@ -84,7 +84,7 @@ def test_measures():
     # 'am.z.score.corr'
 
     # calculate module measures
-    df = am.calculate_measures(df)
+    am.calculate_measures(df)
     # print(df.columns)
     # 'z_score',
     # 't_score',
