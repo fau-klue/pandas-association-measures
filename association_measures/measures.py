@@ -23,8 +23,9 @@ def z_score(df):
     :rtype: pandas.Series
     """
 
-    if 'E11' not in df.columns:
-        return np.nan
+    df = df.copy()
+    if not (df.columns.isin(['O11', 'E11']).all()):
+        expected_frequencies(df)
 
     res = (df['O11'] - df['E11']) / np.sqrt(df['E11'])
 
@@ -40,8 +41,9 @@ def t_score(df):
     :rtype: pandas.Series
     """
 
-    if 'E11' not in df.columns:
-        return np.nan
+    df = df.copy()
+    if not (df.columns.isin(['O11', 'E11']).all()):
+        expected_frequencies(df)
 
     res = (df['O11'] - df['E11']) / np.sqrt(df['O11'])
 
@@ -58,8 +60,9 @@ def mutual_information(df):
     :rtype: pandas.Series
     """
 
-    if 'E11' not in df.columns:
-        return np.nan
+    df = df.copy()
+    if not (df.columns.isin(['O11', 'E11']).all()):
+        expected_frequencies(df)
 
     diff = df['O11'].replace(0, np.nan) / df['E11'].replace(0, np.nan)
     res = np.log10(diff.replace(0.0, np.nan))
@@ -71,20 +74,21 @@ def dice(df):
     """
     Calculate Dice coefficient
 
-    :param pandas.DataFrame df: Pandas Dataframe containing O11, f1 and f2
+    :param pandas.DataFrame df: Pandas Dataframe containing O11, O12, O21
     :return: pandas.Series containing the Dice coefficient for each token
     :rtype: pandas.Series
     """
 
-    if 'O11' not in df.columns:
-        return np.nan
+    df = df.copy()
+    if not (df.columns.isin(['O11', 'E11']).all()):
+        expected_frequencies(df)
 
-    res = (2 * df['O11']) / (df['f1'] + df['f2'])
+    res = (2 * df['O11']) / (2 * df['O11'] + df['O12'] + df['O21'])
 
     return pd.Series(data=res)
 
 
-def log_likelihood(df):
+def log_likelihood(df, signed=True):
     """
     Calculate log-likelihood
 
@@ -94,8 +98,9 @@ def log_likelihood(df):
     :rtype: pandas.Series
     """
 
-    if 'E11' not in df.columns:
-        return np.nan
+    df = df.copy()
+    if not (df.columns.isin(['O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']).all()):
+        expected_frequencies(df)
 
     with np.errstate(divide='ignore', invalid='ignore'):
         ii = df['O11'] * np.log(df['O11'] / df['E11'].replace(0, np.nan))
@@ -104,7 +109,8 @@ def log_likelihood(df):
         jj = df['O22'] * np.log(df['O22'] / df['E22'].replace(0, np.nan))
 
     res = 2 * pd.concat([ii, ij, ji, jj], axis=1).sum(1)
-    res = np.sign(df['O11'] - df['E11']) * res
+    if signed:
+        res = np.sign(df['O11'] - df['E11']) * res
 
     return pd.Series(data=res)
 
@@ -119,22 +125,31 @@ def hypergeometric_likelihood(df):
     :rtype: pandas.Series
     """
 
-    if 'O11' not in df.columns:
-        return np.nan
+    df = df.copy()
+    if not (df.columns.isin(['N', 'O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']).all()):
+        expected_frequencies(df)
 
     # TODO: Is this correct?
+    # looks good but does not return any results except Inf / -Inf
+    # probably an error in choose?
     res = (
-        choose(df['f2'], df['O11']) *
-        choose(df['O12'] + df['O22'], df['f1'] - df['O11'])
-    ) / choose(df['N'], df['f1'])
+        choose(df['O11'] + df['O21'], df['O11']) *
+        choose(df['O12'] + df['O22'], df['O12'])
+    ) / choose(df['N'], df['O11'] + df['O12'])
 
     return pd.Series(data=res)
 
 
 def log_ratio(df):
+
+    df = df.copy()
+    if not (df.columns.isin(['N', 'O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']).all()):
+        expected_frequencies(df)
+
     C1 = df['O11'] + df['O21']
     C2 = df['O12'] + df['O22']
     ratio = df['O11'] / C1 / (df['O12'] / C2)
+
     return pd.Series(data=np.log2(ratio))
 
 
@@ -150,7 +165,9 @@ def calculate_measures(df, measures=None, inplace=True):
 
     # inplace?
     if not inplace:
-        df = df.copy()
+        df_loc = df.copy()
+    else:
+        df_loc = df
 
     # implemented measures
     ams_all = {
@@ -160,12 +177,12 @@ def calculate_measures(df, measures=None, inplace=True):
         'log_likelihood': log_likelihood,
         'mutual_information': mutual_information,
         'log_ratio': log_ratio,
-        'hypergeometric_likelihood': hypergeometric_likelihood
+        # 'hypergeometric_likelihood': hypergeometric_likelihood
     }
 
     # check for expected frequencies
     if not (df.columns.isin(['E11', 'E12', 'E21', 'E22']).all()):
-        df['E11'], df['E12'], df['E21'], df['E22'] = expected_frequencies(df, inplace)
+        expected_frequencies(df_loc, inplace=True)
 
     # select measures
     if measures is not None:
@@ -176,6 +193,6 @@ def calculate_measures(df, measures=None, inplace=True):
 
     # calculate measures
     for measure in measures:
-        df[measure.__name__] = measure(df)
+        df[measure.__name__] = measure(df_loc)
 
     return df
