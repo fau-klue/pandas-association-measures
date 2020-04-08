@@ -11,6 +11,7 @@ pytest = "==4.4.0"
 pytest-cov = "==2.6.1"
 requests = "==2.22.0"
 twine = "==1.13.0"
+pluggy = "==0.13.0"
 
 [packages]
 pandas = "*"
