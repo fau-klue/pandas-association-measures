@@ -23,7 +23,7 @@ def random_dataframe():
                        'O11': np.random.randint(10, size=10),
                        'N': [10] * 10})
 
-    df['E11'], df['E12'], df['E21'], df['E22'] = fq.expected_frequencies(df)
+    df = df.join(fq.expected_frequencies(df))
     return df
 
 
@@ -35,7 +35,7 @@ def sample_dataframe():
                        'O11': [10] * 10,
                        'N': [100] * 10})
 
-    df['E11'], df['E12'], df['E21'], df['E22'] = fq.expected_frequencies(df)
+    df = df.join(fq.expected_frequencies(df))
     return df
 
 
