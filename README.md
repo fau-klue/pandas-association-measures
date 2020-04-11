@@ -29,6 +29,7 @@ The module expects a pandas dataframe with reasonably named columns. Columns sho
 ```python3
 >>> df.head()
             item  O11    O12  O21     O22
+id
 1    appreciated    1  15333    1  176663
 2        certain    7  15327  113  176551
 3      measuring    1  15333    7  176657
@@ -41,6 +42,7 @@ or follow Evert's (2004: 36) notation of frequency signatures:
 ```python3
 >>> df.head()
             item  f     f1   f2       N
+id
 1    appreciated  1  15334    2  191998
 2        certain  7  15334  120  191998
 3      measuring  1  15334    8  191998
@@ -56,25 +58,58 @@ Combinations of both are possible, but you should make sure that all of the foll
 - N = O11 + O12 + O21 + O22
 
 ## Frequencies
-Given a Dataframe as specified above, you can calculate expected frequencies via
+Given a dataframe as specified above, you can calculate expected frequencies via
 
 ```python3
 >>> import association_measures.frequencies as fq
-
->>> # inplace operation
->>> fq.expected_frequencies(df)
->>> df.head()
-
-            item       E11           E12         E21            E22       N ...
-1    appreciated  0.159731  15333.840269    1.840269  176662.159731  191998 ...
-2        certain  9.583850  15324.416150  110.416150  176553.583850  191998 ...
-3      measuring  0.638923  15333.361077    7.361077  176656.638923  191998 ...
-4   particularly  3.753675  15330.246325   43.246325  176620.753675  191998 ...
-5        arrived  0.399327  15333.600673    4.600673  176659.399327  191998 ...
-
->>> # alternatively:
-df['E11'], df['E12'], df['E21'], df['E22'] = fq.expected_frequencies(df, inplace=False)
+>>> df_exp = fq.expected_frequencies(df)
+>>> df_exp.head()
+         E11           E12         E21            E22
+1   0.159731  15333.840269    1.840269  176662.159731
+2   9.583850  15324.416150  110.416150  176553.583850
+3   0.638923  15333.361077    7.361077  176656.638923
+4   3.753675  15330.246325   43.246325  176620.753675
+5   0.399327  15333.600673    4.600673  176659.399327
 ```
+
+The `observed_frequency` method will convert to contingency notation:
+
+```python3
+>>> import association_measures.frequencies as fq
+>>> df_obs = fq.observed_frequencies(df)
+>>> df_obs.head()
+    O11    O12  O21     O22
+id
+1     1  15333    1  176663
+2     7  15327  113  176551
+3     1  15333    7  176657
+4     2  15332   45  176619
+5     2  15332    3  176661
+```
+
+Note that all methods return dataframes that are indexed the same way the input dataframe is indexed:
+
+```python3
+>>> df.head()
+              f     f1   f2       N
+item
+appreciated   1  15334    2  191998
+certain       7  15334  120  191998
+measuring     1  15334    8  191998
+particularly  2  15334   47  191998
+arrived       2  15334    5  191998
+>>> fq.observed_frequencies(df)
+              O11    O12  O21     O22
+item
+appreciated     1  15333    1  176663
+certain         7  15327  113  176551
+measuring       1  15333    7  176657
+particularly    2  15332   45  176619
+arrived         2  15332    3  176661
+```
+
+You can thus `join` the results directly to the input.
+
 
 ## Association Measures
 
@@ -87,30 +122,32 @@ As of version 0.1.4, the following association measures are supported:
 - mutual-information
 - log-ratio
 
-You can either calculate a specified measure:
+You can either calculate specific measures:
 
 ```python3
 >>> import association_measures.measures as am
-
->>> df['MI'] = am.mutual_information(df)
->>> df.head()
-
-              l2  f     f1   f2       N        MI
-1    appreciated  1  15334    2  191998  0.796611
-2        certain  7  15334  120  191998 -0.136442
-3      measuring  1  15334    8  191998  0.194551
-4   particularly  2  15334   47  191998 -0.273427
-5        arrived  2  15334    5  191998  0.699701
+>>> df_am = am.calculate_measures(df, measures=['log_likelihood', 'log_ratio'])
+>>> df_am.head()
+    log_likelihood  log_ratio
+1         2.448757   2.646364
+2        -0.829802  -0.453494
+3         0.191806   0.646319
+4        -1.059386  -0.908469
+5         3.879126   2.324508
 ```
 
-or calculate all available association measures (or a sub-set thereof):
+or calculate all available association measures:
 
 ```python3
->>> df = am.calculate_measures(df, inplace=False)
->>> am.calculate_measures(df, measures=['log_likelihood', 'log_ratio'], inplace=True)
+>>> df = am.calculate_measures(df)
+>>> df_am.head()
+     z_score   t_score      dice  log_likelihood  mutual_information  log_ratio
+1   2.102442  0.840269  0.000130        2.448757            0.796611   2.646364
+2  -0.834636 -0.976603  0.000906       -0.829802           -0.136442  -0.453494
+3   0.451726  0.361077  0.000130        0.191806            0.194551   0.646319
+4  -0.905150 -1.240035  0.000260       -1.059386           -0.273427  -0.908469
+5   2.533018  1.131847  0.000261        3.879126            0.699701   2.324508
 ```
-
-NB: inplace operation will also add (and potentially over-write) columns for observed and expected frequencies.
 
 # Development
 
