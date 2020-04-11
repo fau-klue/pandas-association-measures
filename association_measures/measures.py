@@ -5,155 +5,161 @@ http://www.collocations.de/AM/index.html
 """
 
 
-import pandas as pd
 import numpy as np
-from .binomial import choose as binomial
-from .frequencies import expected_frequencies
+from .frequencies import expected_frequencies, observed_frequencies
 
 
-choose = np.vectorize(binomial)  # pylint: disable=invalid-name
+def choose(n, k):
+    """
+    A fast way to calculate binomial coefficients by Andrew Dalke.
+    See http://stackoverflow.com/questions/3025162/statistics-combinations-in-python
+    """
+    n = int(n)
+    k = int(k)
+    if 0 <= k <= n:
+        ntok = 1
+        ktok = 1
+        for t in range(1, min(k, n - k) + 1):
+            ntok *= n
+            ktok *= t
+            n -= 1
+        return ntok // ktok
+    else:
+        return 0
 
 
-def z_score(df):
+def phi(o, e):
+    """
+    Calculate phi(o,e):=o*log(o/e) with lim_{o↓0} phi(o,e)=0
+
+    :param int o: observed frequency
+    :param float e: expected frequency
+    :return: phi
+    :rtype: float
+    """
+
+    if o == 0:
+        return 0
+    elif e == 0:
+        raise ValueError("observed value must be 0 if expected value is zero")
+    else:
+        return o * np.log(o / e)
+
+
+def z_score(freq):
     """
     Calculate z-score
 
-    :param pandas.DataFrame df: Pandas Dataframe containing O11 and E11
-    :return: pandas.Series containing the Z-Score for each token
-    :rtype: pandas.Series
+    :param dict freq: dictionary-like object with O11 and E11
+    :return: z-score
+    :rtype: float
     """
 
-    df = df.copy()
-    if not (df.columns.isin(['O11', 'E11']).all()):
-        expected_frequencies(df)
+    am = (freq['O11'] - freq['E11']) / np.sqrt(freq['E11'])
 
-    res = (df['O11'] - df['E11']) / np.sqrt(df['E11'])
-
-    return pd.Series(data=res)
+    return am
 
 
-def t_score(df):
+def t_score(freq):
     """
     Calculate t-score
 
-    :param pandas.DataFrame df: Pandas Dataframe containing O11 and E11
-    :return: pandas.Series containing the T-Score for each token
-    :rtype: pandas.Series
+    :param dict freq: dictionary-like object with O11 and E11
+    :return: t-score
+    :rtype: float
     """
 
-    df = df.copy()
-    if not (df.columns.isin(['O11', 'E11']).all()):
-        expected_frequencies(df)
+    am = (freq['O11'] - freq['E11']) / np.sqrt(freq['O11'])
 
-    res = (df['O11'] - df['E11']) / np.sqrt(df['O11'])
-
-    return pd.Series(data=res)
+    return am
 
 
-def mutual_information(df):
+def mutual_information(freq):
     """
     Calculate Mutual Information
 
-    :param pandas.DataFrame df: Pandas Dataframe containing O11 and E11
-    :return: pandas.Series containing the Mutual Information score for
-    each token
-    :rtype: pandas.Series
+    :param dict freq: dictionary-like object with O11 and E11
+    :return: mutual_information
+    :rtype: float
     """
 
-    df = df.copy()
-    if not (df.columns.isin(['O11', 'E11']).all()):
-        expected_frequencies(df)
+    am = np.log10(freq['O11'] / freq['E11'])
 
-    diff = df['O11'].replace(0, np.nan) / df['E11'].replace(0, np.nan)
-    res = np.log10(diff.replace(0.0, np.nan))
-
-    return pd.Series(data=res)
+    return am
 
 
-def dice(df):
+def dice(freq):
     """
     Calculate Dice coefficient
 
-    :param pandas.DataFrame df: Pandas Dataframe containing O11, O12, O21
-    :return: pandas.Series containing the Dice coefficient for each token
-    :rtype: pandas.Series
+    :param dict freq: dictionary-like object with O11, O12, O21
+    :return: dice
+    :rtype: float
     """
 
-    df = df.copy()
-    if not (df.columns.isin(['O11', 'E11']).all()):
-        expected_frequencies(df)
+    am = (2 * freq['O11']) / (2 * freq['O11'] + freq['O12'] + freq['O21'])
 
-    res = (2 * df['O11']) / (2 * df['O11'] + df['O12'] + df['O21'])
-
-    return pd.Series(data=res)
+    return am
 
 
-def log_likelihood(df, signed=True):
+def log_likelihood(freq, signed=True):
     """
     Calculate log-likelihood
 
-    :param pandas.DataFrame df: Pandas Dataframe containing O11, O12,
-    O21, O22, E11, E12, E21 and E22
-    :return: pandas.Series containing the log-likelihood score for each token
-    :rtype: pandas.Series
+    :param dict freq: dictionary-like object with O11, O12, O21, O22, E11, E12, E21, E22
+    :param bool signed: whether to return negative values for anti-collocates
+    :return: log-likelihood
+    :rtype: float
     """
 
-    df = df.copy()
-    if not (df.columns.isin(['O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']).all()):
-        expected_frequencies(df)
+    ii = phi(freq['O11'], freq['E11'])
+    ij = phi(freq['O12'], freq['E12'])
+    ji = phi(freq['O21'], freq['E21'])
+    jj = phi(freq['O22'], freq['E22'])
 
-    with np.errstate(divide='ignore', invalid='ignore'):
-        ii = df['O11'] * np.log(df['O11'] / df['E11'].replace(0, np.nan))
-        ij = df['O12'] * np.log(df['O12'] / df['E12'].replace(0, np.nan))
-        ji = df['O21'] * np.log(df['O21'] / df['E21'].replace(0, np.nan))
-        jj = df['O22'] * np.log(df['O22'] / df['E22'].replace(0, np.nan))
-
-    res = 2 * pd.concat([ii, ij, ji, jj], axis=1).sum(1)
+    am = 2 * (ii + ij + ji + jj)
     if signed:
-        res = np.sign(df['O11'] - df['E11']) * res
+        am = np.sign(freq['O11'] - freq['E11']) * am
 
-    return pd.Series(data=res)
+    return am
 
 
-def hypergeometric_likelihood(df):
+def hypergeometric_likelihood(freq):
     """
     Calculate hypergeometric-likelihood
 
-    :param pandas.DataFrame df: Pandas Dataframe containing O11, O12,
-    O21, O22, E11, E12, E21 and E22
-    :return: pandas.Series containing the hypergeometric-likelihood score for each token
-    :rtype: pandas.Series
+    :param dict freq: dictionary-like object with O11, O12, O21, O22
+    :return: dice
+    :rtype: float
     """
 
-    df = df.copy()
-    if not (df.columns.isin(['N', 'O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']).all()):
-        expected_frequencies(df)
-
-    # TODO: Is this correct?
-    # looks good but does not return any results except Inf / -Inf
-    # probably an error in choose?
-    res = (
-        choose(df['O11'] + df['O21'], df['O11']) *
-        choose(df['O12'] + df['O22'], df['O12'])
-    ) / choose(df['N'], df['O11'] + df['O12'])
-
-    return pd.Series(data=res)
+    N = freq['O11'] + freq['O12'] + freq['O21'] + freq['O22']
+    if N == 0:
+        return np.nan
+    am = (
+        choose(freq['O11'] + freq['O21'], freq['O11']) *
+        choose(freq['O12'] + freq['O22'], freq['O12'])
+    ) / choose(N, freq['O11'] + freq['O12'])
+    return am
 
 
-def log_ratio(df):
+def log_ratio(freq):
+    """
+    Calculate log-ratio
 
-    df = df.copy()
-    if not (df.columns.isin(['N', 'O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']).all()):
-        expected_frequencies(df)
+    :param dict freq: dictionary-like object with O11, O12, O21, O22
+    :return: log-ratio
+    :rtype: float
+    """
 
-    C1 = df['O11'] + df['O21']
-    C2 = df['O12'] + df['O22']
-    ratio = df['O11'] / C1 / (df['O12'] / C2)
+    C1 = freq['O11'] + freq['O21']
+    C2 = freq['O12'] + freq['O22']
+    am = np.log2(freq['O11'] / C1 / (freq['O12'] / C2))
 
-    return pd.Series(data=np.log2(ratio))
+    return am
 
 
-def calculate_measures(df, measures=None, inplace=True):
+def calculate_measures(df, measures=None):
     """
     Calculate a list of association measures. Defaults to all available measures.
 
@@ -163,12 +169,6 @@ def calculate_measures(df, measures=None, inplace=True):
     :rtype: pandas.DataFrame
     """
 
-    # inplace?
-    if not inplace:
-        df_loc = df.copy()
-    else:
-        df_loc = df
-
     # implemented measures
     ams_all = {
         'z_score': z_score,
@@ -177,22 +177,30 @@ def calculate_measures(df, measures=None, inplace=True):
         'log_likelihood': log_likelihood,
         'mutual_information': mutual_information,
         'log_ratio': log_ratio,
-        # 'hypergeometric_likelihood': hypergeometric_likelihood
+        'hypergeometric_likelihood': hypergeometric_likelihood
     }
 
-    # check for expected frequencies
-    if not (df.columns.isin(['E11', 'E12', 'E21', 'E22']).all()):
-        expected_frequencies(df_loc, inplace=True)
+    # take (or create) appropriate columns
+    if not (df.columns.isin(
+            ['O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']
+    ).all()):
+        df_obs = observed_frequencies(df)
+        df_exp = expected_frequencies(df)
+        df = df_obs.join(df_exp)
+
+    df = df[['O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']]
 
     # select measures
     if measures is not None:
         if type(measures[0]) == str:
             measures = [ams_all[k] for k in measures if k in ams_all.keys()]
     else:
-        measures = [ams_all[k] for k in ams_all.keys()]
+        measures = [ams_all[k] for k in ams_all.keys() if k != 'hypergeometric_likelihood']
 
     # calculate measures
     for measure in measures:
-        df[measure.__name__] = measure(df_loc)
+        df[measure.__name__] = df.apply(measure, axis=1)
+
+    df = df.drop(['O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22'], axis=1)
 
     return df
