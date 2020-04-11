@@ -4,8 +4,10 @@ observed (O11, O12, O21, O22) and expected (E11, E12, E21, E22) frequencies
 http://www.collocations.de/AM/index.html
 """
 
+from pandas import DataFrame
 
-def observed_frequencies(df, inplace=True):
+
+def observed_frequencies(df):
     """
     Calculate contingency table for observed data.
 
@@ -15,9 +17,9 @@ def observed_frequencies(df, inplace=True):
     f2 = C1 = O11 + O21         # marginal freq. of token
     N                           # size of corpus
 
-    :param pandas.DataFrame df: Pandas Dataframe containing O11 or f, f1, f2 and N
-    :return: tuple of pandas.Series (O11, O12, O21, O22)
-    :rtype: tuple
+    :param pandas.DataFrame df: df with O11/f, O12/f1, O21/f2, O22/N
+    :return: df with same index and columns O11, O12, O21, O22
+    :rtype: pandas.DataFrame
     """
 
     # check f / O11
@@ -61,51 +63,48 @@ def observed_frequencies(df, inplace=True):
     else:
         raise ValueError('either "O22" or "N" must be given')
 
-    if inplace:
-        df['O11'] = O11
-        df['O12'] = O12
-        df['O21'] = O21
-        df['O22'] = O22
+    return DataFrame(
+        index=df.index,
+        data={
+            'O11': O11,
+            'O12': O12,
+            'O21': O21,
+            'O22': O22
+        }
+    )
 
-    return (O11, O12, O21, O22)
 
-
-def expected_frequencies(df, inplace=True):
+def expected_frequencies(df):
     """
     Calculate expected frequencies for observed frequencies.
 
-    :param pandas.DataFrame df: Dataframe with reasonably-named freq. signature
-    :return: tuple of pandas.Series (E11, E12, E21, E22)
-    :rtype: tuple
+    :param pandas.DataFrame df: df with reasonably named columns
+    :return: df with same index and columns E11, E12, E21, E22
+    :rtype: pandas.DataFrame
     """
 
     if not (df.columns.isin(['O11', 'O12', 'O21', 'O22']).all()):
-        O11, O12, O21, O22 = observed_frequencies(df, inplace)
+        obs = observed_frequencies(df)
     else:
-        O11 = df['O11']
-        O12 = df['O12']
-        O21 = df['O21']
-        O22 = df['O22']
+        obs = df[['O11', 'O12', 'O21', 'O22']]
 
-    if 'N' not in df.columns:
-        N = df['O11'] + df['O12'] + df['O21'] + df['O22']
-    else:
-        N = df['N']
-
-    R1 = O11 + O12
-    R2 = O21 + O22
-    C1 = O11 + O21
-    C2 = O12 + O22
+    R1 = obs['O11'] + obs['O12']
+    R2 = obs['O21'] + obs['O22']
+    C1 = obs['O11'] + obs['O21']
+    C2 = obs['O12'] + obs['O22']
+    N = R1 + R2
 
     E11 = (R1 * C1) / N
     E12 = (R1 * C2) / N
     E21 = (R2 * C1) / N
     E22 = (R2 * C2) / N
 
-    if inplace:
-        df['E11'] = E11
-        df['E12'] = E12
-        df['E21'] = E21
-        df['E22'] = E22
-
-    return (E11, E12, E21, E22)
+    return DataFrame(
+        index=df.index,
+        data={
+            'E11': E11,
+            'E12': E12,
+            'E21': E21,
+            'E22': E22
+        }
+    )
