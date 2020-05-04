@@ -84,12 +84,11 @@ def dice(freq):
     return am
 
 
-def log_likelihood(freq, signed=True):
+def log_likelihood(freq):
     """
     Calculate log-likelihood
 
     :param dict freq: dictionary-like object with O11, O12, O21, O22, E11, E12, E21, E22
-    :param bool signed: whether to return negative values for anti-collocates
     :return: log-likelihood
     :rtype: float
     """
@@ -100,8 +99,9 @@ def log_likelihood(freq, signed=True):
     jj = phi(freq['O22'], freq['E22'])
 
     am = 2 * (ii + ij + ji + jj)
-    if signed:
-        am = np.sign(freq['O11'] - freq['E11']) * am
+
+    # calculate signed version by default
+    am = np.sign(freq['O11'] - freq['E11']) * am
 
     return am
 
