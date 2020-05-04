@@ -22,10 +22,10 @@ def phi(o, e):
 
     if o == 0:
         return 0
-    elif e == 0:
+    if e == 0:
         raise ValueError("observed value must be 0 if expected value is zero")
-    else:
-        return o * np.log(o / e)
+
+    return o * np.log(o / e)
 
 
 def z_score(freq):
@@ -174,10 +174,10 @@ def calculate_measures(df, measures=None):
 
     # select measures
     if measures is not None:
-        if type(measures[0]) == str:
+        if isinstance(measures[0], str):
             measures = [ams_all[k] for k in measures if k in ams_all.keys()]
     else:
-        measures = [ams_all[k] for k in ams_all.keys() if k != 'hypergeometric_likelihood']
+        measures = [ams_all[k] for k in ams_all if k != 'hypergeometric_likelihood']
 
     # calculate measures
     for measure in measures:

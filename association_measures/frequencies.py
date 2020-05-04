@@ -83,7 +83,7 @@ def expected_frequencies(df):
     :rtype: pandas.DataFrame
     """
 
-    if not (df.columns.isin(['O11', 'O12', 'O21', 'O22']).all()):
+    if not df.columns.isin(['O11', 'O12', 'O21', 'O22']).all():
         obs = observed_frequencies(df)
     else:
         obs = df[['O11', 'O12', 'O21', 'O22']]
