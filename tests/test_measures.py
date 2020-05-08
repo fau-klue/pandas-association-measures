@@ -57,6 +57,19 @@ def test_measures_gold():
     assert(round(df['am.MI'], 10).equals(round(df['mutual_information'], 10)))
     assert(round(df['am.log.likelihood'], 10).equals(round(df['log_likelihood'], 10)))
 
+###########
+# Helpers #
+###########
+
+def test_phi():
+    assert am.phi(5, 2) == 4.5814536593707755
+
+def test_phi_zero():
+    assert am.phi(0, 5) == 0
+
+def test_phi_error():
+    with pytest.raises(ValueError):
+        am.phi(5, 0)
 
 ######
 # MI #
@@ -75,11 +88,9 @@ def test_mutual_information(sample_dataframe):
 @pytest.mark.nan
 def test_mutual_information_nan(invalid_dataframe):
     df = invalid_dataframe
-    try:
-        am.calculate_measures(df, ['mutual_information'])
-    except ValueError:
-        pass
 
+    with pytest.raises(ValueError):
+        am.calculate_measures(df, ['mutual_information'])
 
 @pytest.mark.mi
 @pytest.mark.zero
@@ -105,11 +116,10 @@ def test_dice(sample_dataframe):
 @pytest.mark.dice
 @pytest.mark.nan
 def test_dice_nan(invalid_dataframe):
+
     df = invalid_dataframe
-    try:
+    with pytest.raises(ValueError):
         am.calculate_measures(df, ['dice'])
-    except ValueError:
-        pass
 
 
 @pytest.mark.dice
@@ -136,10 +146,8 @@ def test_t_score(sample_dataframe):
 @pytest.mark.nan
 def test_t_score_nan(invalid_dataframe):
     df = invalid_dataframe
-    try:
+    with pytest.raises(ValueError):
         am.calculate_measures(df, ['t_score'])
-    except ValueError:
-        pass
 
 
 @pytest.mark.t_score
@@ -166,10 +174,8 @@ def test_z_score(sample_dataframe):
 @pytest.mark.nan
 def test_z_score_nan(invalid_dataframe):
     df = invalid_dataframe
-    try:
+    with pytest.raises(ValueError):
         am.calculate_measures(df, ['z_score'])
-    except ValueError:
-        pass
 
 
 @pytest.mark.z_score
@@ -196,10 +202,8 @@ def test_log_likelihood(sample_dataframe):
 @pytest.mark.nan
 def test_log_likelihood_nan(invalid_dataframe):
     df = invalid_dataframe
-    try:
+    with pytest.raises(ValueError):
         am.calculate_measures(df, ['log_likelihood'])
-    except ValueError:
-        pass
 
 
 @pytest.mark.log_likelihood
@@ -227,10 +231,8 @@ def test_hypergeometric_likelihood(sample_dataframe):
 @pytest.mark.nan
 def test_hypergeometric_likelihood_nan(invalid_dataframe):
     df = invalid_dataframe
-    try:
+    with pytest.raises(ValueError):
         am.calculate_measures(df, ['hypergeometric_likelihood'])
-    except ValueError:
-        pass
 
 
 @pytest.mark.hypergeometric_likelihood
