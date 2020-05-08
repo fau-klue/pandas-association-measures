@@ -18,8 +18,8 @@ import association_measures.measures as am
 
 df = pd.read_csv('tests/brown.csv')
 
-df['O11'], df['O12'], df['O21'], df['O22'] = fq.observed_frequencies(df)
-df['E11'], df['E12'], df['E21'], df['E22'] = fq.expected_frequencies(df)
+df = df.join(fq.observed_frequencies(df))
+df = df.join(fq.expected_frequencies(df))
 """
 
 # code snippet whose execution time is to be measured
@@ -27,13 +27,13 @@ codes = [
     {
     'name': 'contingency_table',
     'code': '''
-df['O11'], df['O12'], df['O21'], df['O22'] = fq.observed_frequencies(df)
+fq.observed_frequencies(df)
     '''
     },
     {
     'name': 'expected_frequencies',
     'code': '''
-df['E11'], df['E12'], df['E21'], df['E22'] = fq.expected_frequencies(df)
+fq.expected_frequencies(df)
     '''
     },
     {
