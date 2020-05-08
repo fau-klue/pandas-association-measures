@@ -1,6 +1,6 @@
 #cython: cdivision=True
 
-cpdef int choose(int n, int k):
+cpdef double choose(int n, int k):
     """
     Binomial coefficient Cython implementation
     :param int n: n elements
@@ -15,7 +15,7 @@ cpdef int choose(int n, int k):
     if n < k:
         return 0
 
-    cdef int p = 1
+    cdef double p = 1
     cdef int N = min(k, n - k) + 1
     cdef int i
     for i in range(1, N):

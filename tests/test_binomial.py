@@ -13,3 +13,4 @@ def test_choose():
     assert bi.choose(-3, 5) == 0
     assert bi.choose(-2, -2) == 0
     assert bi.choose(10, -2) == 0
+    assert bi.choose(1000, 500) == 2.7028824094543644e+299
