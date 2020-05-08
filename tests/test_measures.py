@@ -214,6 +214,13 @@ def test_log_likelihood_with_zeros(zero_dataframe):
     assert isnan(df_ams['log_likelihood'].iloc[0])
 
 
+@pytest.mark.log_likelihood
+def test_log_likelihood(sample_dataframe):
+
+    df = sample_dataframe
+    am.log_likelihood(sample_dataframe)
+
+
 ######
 # hypergeometric-likelihood #
 ######
