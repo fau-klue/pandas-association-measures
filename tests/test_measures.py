@@ -218,7 +218,7 @@ def test_log_likelihood_with_zeros(zero_dataframe):
 def test_log_likelihood(sample_dataframe):
 
     df = sample_dataframe
-    am.log_likelihood(sample_dataframe)
+    df.apply(am.log_likelihood, axis=1)
 
 
 ######
