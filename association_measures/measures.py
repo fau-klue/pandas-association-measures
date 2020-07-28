@@ -21,11 +21,11 @@ def phi(o, e):
     """
 
     np.seterr(divide='ignore')
-    phi = o * np.log(o / e)
-    phi[phi.isna()] = 0    # NaNs where o=0 → phi=0
+    values = o * np.log(o / e)
+    values[values.isna()] = 0    # NaNs where o=0 → phi=0
     np.seterr(divide='warn')
 
-    return phi
+    return values
 
 
 def z_score(df):
