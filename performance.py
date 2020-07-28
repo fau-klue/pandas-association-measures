@@ -66,6 +66,12 @@ df['am'] = am.dice(df)
 df['am'] = am.log_likelihood(df)
         '''
     },
+    #     {
+    #         'name': 'hypergeometric_likelihood',
+    #         'code': '''
+    # df['am'] = am.hypergeometric_likelihood(df)
+    #         '''
+    #     },
 ]
 
 for code in codes:

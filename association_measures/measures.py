@@ -103,21 +103,21 @@ def log_likelihood(df):
     return am
 
 
-# def hypergeometric_likelihood(df):
-#     """
-#     Calculate hypergeometric-likelihood
+def hypergeometric_likelihood(df):
+    """
+    Calculate hypergeometric-likelihood
 
-#     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
-#     :return: hypergeometric likelihood
-#     :rtype: pd.Series
-#     """
+    :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
+    :return: hypergeometric likelihood
+    :rtype: pd.Series
+    """
 
-#     N = df['O11'] + df['O12'] + df['O21'] + df['O22']
-#     am = (
-#         choose(df['O11'] + df['O21'], df['O11']) *
-#         choose(df['O12'] + df['O22'], df['O12'])
-#     ) / choose(N, df['O11'] + df['O12'])
-#     return am
+    c1 = df.apply(lambda row: choose(row['O11'] + row['O21'], row['O11']), axis=1)
+    c2 = df.apply(lambda row: choose(row['O12'] + row['O22'], row['O12']), axis=1)
+    c3 = df.apply(lambda row: choose(row['O11'] + row['O12'] + row['O21'] + row['O22'],
+                                     row['O11'] + row['O12']), axis=1)
+    am = c1 * c2 / c3
+    return am
 
 
 def log_ratio(df):

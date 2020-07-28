@@ -239,6 +239,16 @@ def test_log_likelihood_with_zeros(zero_dataframe):
 # hypergeometric-likelihood #
 ######
 
+@pytest.mark.hypergeometric_likelihood
+def test_hypergeometric_likelihood_single(sample_dataframe):
+    import association_measures.frequencies as fq
+    df = sample_dataframe
+    df = fq.observed_frequencies(df)
+    df = df.join(fq.expected_frequencies(df))
+    df_ams = am.hypergeometric_likelihood(df)
+    assert df_ams[0] == 5.776904234533874e-14
+
+
 # @pytest.mark.hypergeometric_likelihood
 # def test_hypergeometric_likelihood(sample_dataframe):
 #     df = sample_dataframe
