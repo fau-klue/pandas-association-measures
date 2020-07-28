@@ -25,49 +25,51 @@ df = df.join(fq.expected_frequencies(df))
 # code snippet whose execution time is to be measured
 codes = [
     {
-    'name': 'contingency_table',
-    'code': '''
+        'name': 'contingency_table',
+        'code': '''
 fq.observed_frequencies(df)
-    '''
+        '''
     },
     {
-    'name': 'expected_frequencies',
-    'code': '''
+        'name': 'expected_frequencies',
+        'code': '''
 fq.expected_frequencies(df)
-    '''
+        '''
     },
     {
-    'name': 'z_score',
-    'code': '''
+        'name': 'z_score',
+        'code': '''
 df['am'] = am.z_score(df)
-    '''
+        '''
     },
     {
-    'name': 't_score',
-    'code': '''
+        'name': 't_score',
+        'code': '''
 df['am'] = am.t_score(df)
-    '''
+        '''
     },
     {
-    'name': 'mutual_information',
-    'code': '''
+        'name': 'mutual_information',
+        'code': '''
 df['am'] = am.mutual_information(df)
-    '''
+        '''
     },
     {
-    'name': 'dice',
-    'code': '''
+        'name': 'dice',
+        'code': '''
 df['am'] = am.dice(df)
-    '''
+        '''
     },
     {
-    'name': 'log_likelihood',
-    'code': '''
+        'name': 'log_likelihood',
+        'code': '''
 df['am'] = am.log_likelihood(df)
-    '''
+        '''
     },
 ]
 
 for code in codes:
     res = timeit.timeit(setup=setup, stmt=code['code'], number=iterations)
-    print('Calculate {func} (iterations={iter}, df_size={size}): {res}'.format(iter=iterations, size=24168, res=res, func=code['name']))
+    print('Calculate {func} (iterations={iter}, df_size={size}): {res}'.format(
+        iter=iterations, size=24168, res=res, func=code['name']
+    ))
