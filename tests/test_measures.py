@@ -242,8 +242,6 @@ def test_log_likelihood_with_zeros(zero_dataframe):
 # @pytest.mark.hypergeometric_likelihood
 # def test_hypergeometric_likelihood(sample_dataframe):
 #     df = sample_dataframe
-
-#     df = sample_dataframe
 #     df_ams = am.calculate_measures(df, ['hypergeometric_likelihood'])
 #     assert df_ams['hypergeometric_likelihood'][0] == 5.776904234533874e-14
 
