@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/fau-klue/pandas-association-measures.svg?branch=master)](https://travis-ci.org/fau-klue/pandas-association-measures)
 [![Coverage Status](https://coveralls.io/repos/github/fau-klue/pandas-association-measures/badge.svg?branch=master)](https://coveralls.io/github/fau-klue/pandas-association-measures?branch=master)
 
-# Corpus Association Measures for Python pandas
+# Statistical Linguistic Association Measures for Python pandas
 
 > Association measures are mathematical formulae that interpret cooccurrence frequency data. For each pair of words extracted from a corpus, they compute an association score, a single real value that indicates the amount of (statistical) association between the two words.
 
@@ -136,7 +136,7 @@ You can either calculate specific measures:
 5         3.879126   2.324508
 ```
 
-or calculate all available association measures:
+or calculate all available measures:
 
 ```python3
 >>> df = am.calculate_measures(df)
