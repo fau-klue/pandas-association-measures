@@ -120,7 +120,7 @@ def log_likelihood(df):
 #     return am
 
 
-def log_ratio(freq):
+def log_ratio(df):
     """
     Calculate log-ratio
 
@@ -129,9 +129,9 @@ def log_ratio(freq):
     :rtype: pd.Series
     """
 
-    C1 = freq['O11'] + freq['O21']
-    C2 = freq['O12'] + freq['O22']
-    am = np.log2((freq['O11'] / C1) / (freq['O12'] / C2))
+    C1 = df['O11'] + df['O21']
+    C2 = df['O12'] + df['O22']
+    am = np.log2((df['O11'] / C1) / (df['O12'] / C2))
 
     return am
 
