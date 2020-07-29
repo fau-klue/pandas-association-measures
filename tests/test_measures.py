@@ -249,24 +249,27 @@ def test_hypergeometric_likelihood_single(sample_dataframe):
     assert df_ams[0] == 5.776904234533874e-14
 
 
-# @pytest.mark.hypergeometric_likelihood
-# def test_hypergeometric_likelihood(sample_dataframe):
-#     df = sample_dataframe
-#     df_ams = am.calculate_measures(df, ['hypergeometric_likelihood'])
-#     assert df_ams['hypergeometric_likelihood'][0] == 5.776904234533874e-14
+@pytest.mark.skip(reason="hypergeometric likelihood disabled in calculate_measures due to performance issues")
+@pytest.mark.hypergeometric_likelihood
+def test_hypergeometric_likelihood(sample_dataframe):
+    df = sample_dataframe
+    df_ams = am.calculate_measures(df, ['hypergeometric_likelihood'])
+    assert df_ams['hypergeometric_likelihood'][0] == 5.776904234533874e-14
 
 
-# @pytest.mark.hypergeometric_likelihood
-# @pytest.mark.nan
-# def test_hypergeometric_likelihood_nan(invalid_dataframe):
-#     df = invalid_dataframe
-#     with pytest.raises(ValueError):
-#         am.calculate_measures(df, ['hypergeometric_likelihood'])
+@pytest.mark.skip(reason="hypergeometric likelihood disabled in calculate_measures due to performance issues")
+@pytest.mark.hypergeometric_likelihood
+@pytest.mark.nan
+def test_hypergeometric_likelihood_nan(invalid_dataframe):
+    df = invalid_dataframe
+    with pytest.raises(ValueError):
+        am.calculate_measures(df, ['hypergeometric_likelihood'])
 
 
-# @pytest.mark.hypergeometric_likelihood
-# @pytest.mark.zero
-# def test_hypergeometric_likelihood_with_zeros(zero_dataframe):
-#     df = zero_dataframe
-#     df_ams = am.calculate_measures(df, ['hypergeometric_likelihood'])
-#     assert isnan(df_ams['hypergeometric_likelihood'].iloc[0])
+@pytest.mark.skip(reason="hypergeometric likelihood disabled in calculate_measures due to performance issues")
+@pytest.mark.hypergeometric_likelihood
+@pytest.mark.zero
+def test_hypergeometric_likelihood_with_zeros(zero_dataframe):
+    df = zero_dataframe
+    df_ams = am.calculate_measures(df, ['hypergeometric_likelihood'])
+    assert isnan(df_ams['hypergeometric_likelihood'].iloc[0])
