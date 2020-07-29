@@ -21,8 +21,10 @@ def phi(o, e):
     """
 
     np.seterr(divide='ignore')
+
     values = o * np.log(o / e)
     values[values.isna()] = 0    # NaNs where o=0 → phi=0
+
     np.seterr(divide='warn')
 
     return values

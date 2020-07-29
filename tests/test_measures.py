@@ -1,5 +1,6 @@
 import pytest
-from pandas import read_csv
+from pandas import read_csv, Series
+from pandas.testing import assert_series_equal
 from numpy import isnan
 
 
@@ -63,17 +64,27 @@ def test_measures_gold():
 # # Helpers #
 # ###########
 
-# def test_phi():
-#     assert am.phi(5, 2) == 4.5814536593707755
+@pytest.mark.helpers
+def test_phi():
 
+    o = Series([4,3,2,1])
+    e = Series([1,2,3,4])
 
-# def test_phi_zero():
-#     assert am.phi(0, 5) == 0
+    expected = Series([5.545177, 1.216395, -0.810930, -1.386294])
+    actual = am.phi(o, e)
 
+    assert_series_equal(actual, expected)
 
-# def test_phi_error():
-#     with pytest.raises(ValueError):
-#         am.phi(5, 0)
+@pytest.mark.helpers
+def test_phi_zero():
+
+    o = Series([0,0,0,0])
+    e = Series([0,0,0,0])
+
+    expected = Series([0.0, 0.0, 0.0, 0.0])
+    actual = am.phi(o, e)
+
+    assert_series_equal(actual, expected)
 
 
 ######
