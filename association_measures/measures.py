@@ -10,6 +10,9 @@ from .binomial import choose
 from .frequencies import expected_frequencies, observed_frequencies
 
 
+CHOOSE = np.vectorize(choose)
+
+
 def phi(o, e):
     """
     Calculate phi(o,e):=o*log(o/e) with lim_{o↓0} phi(o,e)=0
@@ -114,11 +117,12 @@ def hypergeometric_likelihood(df):
     :rtype: pd.Series
     """
 
-    c1 = df.apply(lambda row: choose(row['O11'] + row['O21'], row['O11']), axis=1)
-    c2 = df.apply(lambda row: choose(row['O12'] + row['O22'], row['O12']), axis=1)
-    c3 = df.apply(lambda row: choose(row['O11'] + row['O12'] + row['O21'] + row['O22'],
-                                     row['O11'] + row['O12']), axis=1)
+    c1 = CHOOSE(df['O11'] + df['O21'], df['O11'])
+    c2 = CHOOSE(df['O12'] + df['O22'], df['O12'])
+    c3 = CHOOSE(df['O11'] + df['O12'] + df['O21'] + df['O22'], df['O11'] + df['O12'])
+
     am = c1 * c2 / c3
+
     return am
 
 
@@ -156,7 +160,6 @@ def calculate_measures(df, measures=None):
         'log_likelihood': log_likelihood,
         'mutual_information': mutual_information,
         'log_ratio': log_ratio,
-        # 'hypergeometric_likelihood': hypergeometric_likelihood
     }
 
     # take (or create) appropriate columns

@@ -5,6 +5,7 @@ from numpy import isnan
 
 
 import association_measures.measures as am
+import association_measures.frequencies as fq
 
 
 @pytest.mark.gold
@@ -251,24 +252,14 @@ def test_log_likelihood_with_zeros(zero_dataframe):
 ######
 
 @pytest.mark.hypergeometric_likelihood
-def test_hypergeometric_likelihood_single(sample_dataframe):
-    import association_measures.frequencies as fq
+def test_hypergeometric_likelihood(sample_dataframe):
     df = sample_dataframe
-    df = fq.observed_frequencies(df)
-    df = df.join(fq.expected_frequencies(df))
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    # Not available via calculate_measures due to performance issues
     df_ams = am.hypergeometric_likelihood(df)
     assert df_ams[0] == 5.776904234533874e-14
 
 
-@pytest.mark.skip(reason="hypergeometric likelihood disabled in calculate_measures due to performance issues")
-@pytest.mark.hypergeometric_likelihood
-def test_hypergeometric_likelihood(sample_dataframe):
-    df = sample_dataframe
-    df_ams = am.calculate_measures(df, ['hypergeometric_likelihood'])
-    assert df_ams['hypergeometric_likelihood'][0] == 5.776904234533874e-14
-
-
-@pytest.mark.skip(reason="hypergeometric likelihood disabled in calculate_measures due to performance issues")
 @pytest.mark.hypergeometric_likelihood
 @pytest.mark.nan
 def test_hypergeometric_likelihood_nan(invalid_dataframe):
@@ -277,10 +268,11 @@ def test_hypergeometric_likelihood_nan(invalid_dataframe):
         am.calculate_measures(df, ['hypergeometric_likelihood'])
 
 
-@pytest.mark.skip(reason="hypergeometric likelihood disabled in calculate_measures due to performance issues")
 @pytest.mark.hypergeometric_likelihood
 @pytest.mark.zero
 def test_hypergeometric_likelihood_with_zeros(zero_dataframe):
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['hypergeometric_likelihood'])
-    assert isnan(df_ams['hypergeometric_likelihood'].iloc[0])
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    # Not available via calculate_measures due to performance issues
+    ams = am.hypergeometric_likelihood(df)
+    assert ams[0] == 1.0
