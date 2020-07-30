@@ -30,15 +30,15 @@ try:
     CYTHON_INSTALLED = True
     extensions = [Extension('association_measures.binomial', ['association_measures/binomial.pyx'])]
 except ImportError:
-    cythonize = lambda x, *args, **kwargs: x # dummy func
+    cythonize = lambda x, *args, **kwargs: x  # dummy func
     CYTHON_INSTALLED = False
     extensions = [Extension('association_measures.binomial', ['association_measures/binomial.c'])]
 
 
 LONG_DESCRIPTION = """
-Corpus association measures for Python pandas.
+Statistical association measures for Python pandas.
 
-Association measures are mathematical formulae that interpret cooccurrence frequency data. For each pair of words extracted from a corpus, they compute an association score, a single real value g that indicates the amount of (statistical) association between the two words.
+Association measures are mathematical formulae that interpret cooccurrence frequency data. For each pair of words extracted from a corpus, they compute an association score, a single real value that indicates the amount of (statistical) association between the two words.
 """
 
 try:
@@ -77,7 +77,7 @@ class UploadCommand(Command):
     def run(self):
         try:
             self.status('Removing previous builds…')
-            rmtree(os.path.join(here, 'dist'))
+            os.rmtree(os.path.join(here, 'dist'))
         except OSError:
             pass
 
@@ -92,6 +92,7 @@ class UploadCommand(Command):
         os.system('git push --tags')
 
         sys.exit()
+
 
 setup(
     name=NAME,

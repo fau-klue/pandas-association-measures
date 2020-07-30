@@ -1,9 +1,11 @@
 import pytest
-from pandas import read_csv
+from pandas import read_csv, Series
+from pandas.testing import assert_series_equal
 from numpy import isnan
 
 
 import association_measures.measures as am
+import association_measures.frequencies as fq
 
 
 @pytest.mark.gold
@@ -49,6 +51,7 @@ def test_measures_gold():
     # 'mutual_information',
     # 'hypergeometric_likelihood' NOT IN UCS
     # 'log_ratio' NOT IN UCS
+
     df = df.join(df_ams)
 
     assert(round(df['am.Dice'], 10).equals(round(df['dice'], 10)))
@@ -57,30 +60,51 @@ def test_measures_gold():
     assert(round(df['am.MI'], 10).equals(round(df['mutual_information'], 10)))
     assert(round(df['am.log.likelihood'], 10).equals(round(df['log_likelihood'], 10)))
 
-###########
-# Helpers #
-###########
 
+# ###########
+# # Helpers #
+# ###########
+
+@pytest.mark.helpers
 def test_phi():
-    assert am.phi(5, 2) == 4.5814536593707755
 
+    o = Series([4,3,2,1])
+    e = Series([1,2,3,4])
+
+    expected = Series([5.545177, 1.216395, -0.810930, -1.386294])
+    actual = am.phi(o, e)
+
+    assert_series_equal(actual, expected)
+
+@pytest.mark.helpers
 def test_phi_zero():
-    assert am.phi(0, 5) == 0
 
-def test_phi_error():
-    with pytest.raises(ValueError):
-        am.phi(5, 0)
+    o = Series([0,0,0,0])
+    e = Series([0,0,0,0])
+
+    expected = Series([0.0, 0.0, 0.0, 0.0])
+    actual = am.phi(o, e)
+
+    assert_series_equal(actual, expected)
+
 
 ######
 # MI #
 ######
 
 @pytest.mark.mi
+def test_mutual_information_single(sample_dataframe):
+
+    df = sample_dataframe
+    m = df.apply(am.mutual_information, axis=1)
+    assert m[0] == 1.0
+
+
+@pytest.mark.mi
 def test_mutual_information(sample_dataframe):
 
     df = sample_dataframe
     df_ams = am.calculate_measures(df, ['mutual_information'])
-
     assert df_ams['mutual_information'][0] == 1.0
 
 
@@ -91,6 +115,7 @@ def test_mutual_information_nan(invalid_dataframe):
 
     with pytest.raises(ValueError):
         am.calculate_measures(df, ['mutual_information'])
+
 
 @pytest.mark.mi
 @pytest.mark.zero
@@ -133,6 +158,14 @@ def test_dice_with_zeros(zero_dataframe):
 ##########
 # TSCORE #
 ##########
+
+@pytest.mark.t_score
+def test_t_score_single(sample_dataframe):
+
+    df = sample_dataframe
+    m = df.apply(am.t_score, axis=1)
+    assert m[0] == 2.846049894151541
+
 
 @pytest.mark.t_score
 def test_t_score(sample_dataframe):
@@ -221,10 +254,10 @@ def test_log_likelihood_with_zeros(zero_dataframe):
 @pytest.mark.hypergeometric_likelihood
 def test_hypergeometric_likelihood(sample_dataframe):
     df = sample_dataframe
-
-    df = sample_dataframe
-    df_ams = am.calculate_measures(df, ['hypergeometric_likelihood'])
-    assert df_ams['hypergeometric_likelihood'][0] == 5.776904234533874e-14
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    # Not available via calculate_measures due to performance issues
+    df_ams = am.hypergeometric_likelihood(df)
+    assert df_ams[0] == 5.776904234533874e-14
 
 
 @pytest.mark.hypergeometric_likelihood
@@ -239,5 +272,7 @@ def test_hypergeometric_likelihood_nan(invalid_dataframe):
 @pytest.mark.zero
 def test_hypergeometric_likelihood_with_zeros(zero_dataframe):
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['hypergeometric_likelihood'])
-    assert isnan(df_ams['hypergeometric_likelihood'].iloc[0])
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    # Not available via calculate_measures due to performance issues
+    ams = am.hypergeometric_likelihood(df)
+    assert ams[0] == 1.0
