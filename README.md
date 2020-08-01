@@ -169,3 +169,13 @@ make test
 # Coverage
 make coverage
 ```
+
+## Publish in PyPI
+
+```bash
+make test && make compile
+
+make build
+
+pipenv run twine upload dist/<PATH-TO-NEW-VERSION>.tar.gz
+ ```
