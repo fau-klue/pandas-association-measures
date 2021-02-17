@@ -13,9 +13,9 @@ matrix:
       python: 'nightly'
   include:
     - env: TEST='lint'
-      python: '3.6'
+      python: '3.7'
     - env: TEST='coverage'
-      python: '3.6'
+      python: '3.7'
     - env: TEST='test'
       python: '3.7'
     - env: TEST='test'
