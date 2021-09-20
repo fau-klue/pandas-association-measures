@@ -5,13 +5,11 @@ verify_ssl = true
 
 [dev-packages]
 coveralls = "==1.7.0"
-cython = "==0.29.6"
+cython = "==0.29.24"
 pylint = "==2.3.1"
 pytest = "==4.4.0"
 pytest-cov = "==2.6.1"
-requests = "==2.22.0"
-twine = "==1.13.0"
-pluggy = "==0.13.0"
+twine = "==3.4.2"
 
 [packages]
 pandas = "*"

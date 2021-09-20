@@ -21,5 +21,7 @@ matrix:
     - env: TEST='test'
       python: '3.8'
     - env: TEST='test'
+      python: '3.9'
+    - env: TEST='test'
       python: 'nightly'
 after_success: coveralls
