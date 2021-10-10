@@ -37,7 +37,7 @@ id
 5        arrived    2  15332    3  176661
 ```
 
-or follow Evert's (2004: 36) notation of frequency signatures:
+or follow [Evert's (2008: Figure 8)](https://www.stefan-evert.de/PUB/Evert2007HSK_extended_manuscript.pdf) notation of frequency signatures:
 
 ```python3
 >>> df.head()
@@ -50,7 +50,7 @@ id
 5        arrived  2  15334    5  191998
 ```
 
-Combinations of both are possible, but you should make sure that all of the following equations hold:
+Combinations of both are possible, but you should make sure to include four independent values for each rows, and that all of the following equations hold:
 
 - f = O11
 - f1 = O11 + O12

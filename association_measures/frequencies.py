@@ -11,13 +11,13 @@ def observed_frequencies(df):
     """
     Calculate contingency table for observed data.
 
-    naming conventions (cf. Evert 2004: 36)
+    naming conventions (cf. Evert 2008: Figure 8)
     f = O11                     # co-occurrence freq. of token and node
     f1 = R1 = O11 + O12         # number of tokens in W(node)
     f2 = C1 = O11 + O21         # marginal freq. of token
-    N                           # size of corpus
+    N = O11 + O12 + O21 + O22   # size of corpus without nodes
 
-    :param pandas.DataFrame df: df with O11/f, O12/f1, O21/f2, O22/N
+    :param pandas.DataFrame df: df with O11|f, O12|f1, O21|f2, O22|N
     :return: df with same index and columns O11, O12, O21, O22
     :rtype: pandas.DataFrame
     """
@@ -56,7 +56,7 @@ def observed_frequencies(df):
     # check N / O22
     if 'O22' in df.columns:
         O22 = df['O22']
-        N = O11 + O12 + O21 + O22
+        # N = O11 + O12 + O21 + O22
     elif 'N' in df.columns:
         N = df['N']
         O22 = N - O11 - O12 - O21
