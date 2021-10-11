@@ -148,7 +148,7 @@ def log_ratio(df, disc=.5):
     return am
 
 
-def conservative_log_ratio(df, alpha=.01, correct=True, disc=.5):
+def conservative_log_ratio(df, alpha=.01, correct=True, disc=.5, one_sided=False):
     """
     Calculate conservative log-ratio, i.e. the binary logarithm of the
     lower bound of the confidence interval of relative risk at the
@@ -175,7 +175,9 @@ def conservative_log_ratio(df, alpha=.01, correct=True, disc=.5):
         alpha /= vocab
 
     # get respective quantile of normal distribution
-    z_factor = NormalDist().inv_cdf(1 - alpha / 2)
+    if not one_sided:
+        alpha /= 2
+    z_factor = NormalDist().inv_cdf(1 - alpha)
 
     # asymptotic standard deviation of log(RR) according to Wikipedia
     R1 = df['O11'] + df['O12']

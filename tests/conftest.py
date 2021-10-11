@@ -8,11 +8,10 @@ import association_measures.frequencies as fq
 @pytest.fixture(scope='function')
 def fixed_dataframe():
     """ Sample DataFrame with fixed data"""
-    df = pd.DataFrame({'f': [10] * 10,
+    df = pd.DataFrame({'f': list(reversed(range(1, 11))),
                        'f1': [10] * 10,
-                       'f2': [10] * 10,
+                       'f2': list(range(10, 30, 2)),
                        'N': [100] * 10})
-
     df = df.join(fq.observed_frequencies(df))
     df = df.join(fq.expected_frequencies(df))
     return df

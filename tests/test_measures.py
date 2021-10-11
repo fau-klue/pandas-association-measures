@@ -274,12 +274,20 @@ def test_log_ratio_zero(zero_dataframe):
 def test_conservative_log_ratio(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(
-        df, ['log_ratio', 'conservative_log_ratio'], freq=True
-    )
-    print()
-    print(df_ams[['O11', 'E11', 'log_ratio', 'conservative_log_ratio']])
-    # assert df_ams['log_ratio'][0] == 65.01659467828966
+    df_ams = am.calculate_measures(df, ['log_ratio', 'conservative_log_ratio'])
+    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
+    assert(df_ams['conservative_log_ratio'].iloc[0] == 0.7969356993077386)
+
+
+@pytest.mark.conservative_log_ratio
+def test_conservative_log_ratio_one_sided(fixed_dataframe):
+
+    df = fixed_dataframe
+    df_ams = am.calculate_measures(df, ['conservative_log_ratio'])
+    df_am = am.conservative_log_ratio(df, one_sided=True)
+    df_am.name = 'clr_one_sided'
+    df_ams = df_ams.join(df_am)
+    assert((abs(df_ams['conservative_log_ratio']) <= abs(df_ams['clr_one_sided'])).all())
 
 
 ########
