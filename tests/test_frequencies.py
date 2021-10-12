@@ -1,10 +1,9 @@
 import association_measures.frequencies as fq
-from pandas import read_csv
 
 
-def test_observed_frequencies(sample_dataframe):
+def test_observed_frequencies(fixed_dataframe):
 
-    df = fq.observed_frequencies(sample_dataframe)
+    df = fq.observed_frequencies(fixed_dataframe)
 
     assert df['O11'][0] == 10
     assert df['O12'][0] == 0
@@ -12,17 +11,16 @@ def test_observed_frequencies(sample_dataframe):
     assert df['O22'][0] == 90
 
 
-def test_expected_frequencies(sample_dataframe):
+def test_expected_frequencies(fixed_dataframe):
 
-    df = fq.expected_frequencies(sample_dataframe)
+    df = fq.expected_frequencies(fixed_dataframe)
 
     assert df['E11'][0] == 1.0
 
 
-def test_gold():
+def test_ucs(ucs_dataframe):
 
-    df = read_csv("tests/ucs-gold-100.ds", comment='#', index_col=0,
-                  sep="\t", quoting=3, keep_default_na=False)
+    df = ucs_dataframe
 
     # ucs data has the following relevant columns
     # f = O11

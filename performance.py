@@ -66,6 +66,31 @@ df['am'] = am.dice(df)
 df['am'] = am.log_likelihood(df)
         '''
     },
+    {
+        'name': 'log_ratio',
+        'code': '''
+df['am'] = am.log_ratio(df)
+        '''
+    },
+    {
+        'name': 'conservative_log_ratio',
+        'code': '''
+df['am'] = am.conservative_log_ratio(df)
+        '''
+    },
+    {
+        'name': 'binomial_likelihood',
+        'code': '''
+df['am'] = am.binomial_likelihood(df)
+        '''
+    },
+    # too slow (one iteration > 3 sec)
+    #     {
+    #         'name': 'hypergeometric_likelihood',
+    #         'code': '''
+    # df['am'] = am.hypergeometric_likelihood(df)
+    #         '''
+    #     },
 ]
 
 for code in codes:

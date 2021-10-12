@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/fau-klue/pandas-association-measures.svg?branch=master)](https://travis-ci.com/fau-klue/pandas-association-measures)
+[![Build Status](https://github.com/fau-klue/pandas-association-measures/actions/workflows/python-build.yml/badge.svg)](https://github.com/fau-klue/pandas-association-measures/actions/workflows/python-build.yml)
 [![Coverage Status](https://coveralls.io/repos/github/fau-klue/pandas-association-measures/badge.svg?branch=master)](https://coveralls.io/github/fau-klue/pandas-association-measures?branch=master)
 
 # Statistical Association Measures for Python pandas
@@ -9,11 +9,13 @@ http://www.collocations.de/AM/index.html
 
 # Installation
 
-Using pip:
+**Prerequisites:** As of version v0.1.6, this module requires python version 3.8 or above.
+
+**Using pip:**
 
     pip install association-measures
 
-From Source:
+**From Source:**
 
     # Compile Cython code (requires Cython)
     python setup.py build_ext --inplace
@@ -113,14 +115,15 @@ You can thus `join` the results directly to the input.
 
 ## Association Measures
 
-As of version 0.1.4, the following association measures are supported:
+As of version 0.1.6, the following association measures are supported:
 
 - z-score
 - t-score
+- mutual information
 - dice
 - log-likelihood
-- mutual-information
 - log-ratio
+- conservative log-ratio
 
 You can either calculate specific measures:
 
@@ -129,11 +132,11 @@ You can either calculate specific measures:
 >>> df_am = am.calculate_measures(df, measures=['log_likelihood', 'log_ratio'])
 >>> df_am.head()
     log_likelihood  log_ratio
-1         2.448757   2.646364
-2        -0.829802  -0.453494
-3         0.191806   0.646319
-4        -1.059386  -0.908469
-5         3.879126   2.324508
+1         2.448757   3.526202
+2        -0.829802  -0.486622
+3         0.191806   0.718847
+4        -1.059386  -0.965651
+5         3.879126   2.941240
 ```
 
 or calculate all available measures:
@@ -141,12 +144,12 @@ or calculate all available measures:
 ```python3
 >>> df = am.calculate_measures(df)
 >>> df_am.head()
-     z_score   t_score      dice  log_likelihood  mutual_information  log_ratio
-1   2.102442  0.840269  0.000130        2.448757            0.796611   2.646364
-2  -0.834636 -0.976603  0.000906       -0.829802           -0.136442  -0.453494
-3   0.451726  0.361077  0.000130        0.191806            0.194551   0.646319
-4  -0.905150 -1.240035  0.000260       -1.059386           -0.273427  -0.908469
-5   2.533018  1.131847  0.000261        3.879126            0.699701   2.324508
+               z_score   t_score      dice  log_likelihood  mutual_information  log_ratio  conservative_log_ratio
+appreciated   2.102442  0.840269  0.000130        2.448757            0.796611   3.526202                     0.0
+certain      -0.834636 -0.976603  0.000906       -0.829802           -0.136442  -0.486622                     0.0
+measuring     0.451726  0.361077  0.000130        0.191806            0.194551   0.718847                     0.0
+particularly -0.905150 -1.240035  0.000260       -1.059386           -0.273427  -0.965651                     0.0
+arrived       2.533018  1.131847  0.000261        3.879126            0.699701   2.941240                     0.0
 ```
 
 # Development

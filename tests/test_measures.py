@@ -1,5 +1,5 @@
 import pytest
-from pandas import read_csv, Series
+from pandas import Series
 from pandas.testing import assert_series_equal
 from numpy import isnan
 
@@ -8,79 +8,27 @@ import association_measures.measures as am
 import association_measures.frequencies as fq
 
 
-@pytest.mark.gold
-def test_measures_gold():
-
-    df = read_csv("tests/ucs-gold-100.ds", comment='#', index_col=0,
-                  sep="\t", quoting=3, keep_default_na=False)
-
-    # ucs-measures: am.*
-    # print([t for t in df.columns if t.startswith('am')])
-    # 'am.Dice',
-    # 'am.Fisher.pv',
-    # 'am.Jaccard',
-    # 'am.MI',
-    # 'am.MI2',
-    # 'am.MI3',
-    # 'am.MS',
-    # 'am.Poisson.Stirling',
-    # 'am.Poisson.pv',
-    # 'am.average.MI',
-    # 'am.chi.squared',
-    # 'am.chi.squared.corr',
-    # 'am.frequency',
-    # 'am.gmean',
-    # 'am.local.MI',
-    # 'am.log.likelihood',
-    # 'am.odds.ratio',
-    # 'am.odds.ratio.disc',
-    # 'am.random',
-    # 'am.relative.risk',
-    # 'am.simple.ll',
-    # 'am.t.score',
-    # 'am.z.score',
-    # 'am.z.score.corr'
-
-    # calculate module measures
-    df_ams = am.calculate_measures(df)
-    # print(df_ams.columns)
-    # 'z_score',
-    # 't_score',
-    # 'dice',
-    # 'log_likelihood',
-    # 'mutual_information',
-    # 'hypergeometric_likelihood' NOT IN UCS
-    # 'log_ratio' NOT IN UCS
-
-    df = df.join(df_ams)
-
-    assert(round(df['am.Dice'], 10).equals(round(df['dice'], 10)))
-    assert(round(df['am.t.score'], 10).equals(round(df['t_score'], 10)))
-    assert(round(df['am.z.score'], 10).equals(round(df['z_score'], 10)))
-    assert(round(df['am.MI'], 10).equals(round(df['mutual_information'], 10)))
-    assert(round(df['am.log.likelihood'], 10).equals(round(df['log_likelihood'], 10)))
-
-
-# ###########
-# # Helpers #
-# ###########
+###########
+# Helpers #
+###########
 
 @pytest.mark.helpers
 def test_phi():
 
-    o = Series([4,3,2,1])
-    e = Series([1,2,3,4])
+    o = Series([4, 3, 2, 1])
+    e = Series([1, 2, 3, 4])
 
     expected = Series([5.545177, 1.216395, -0.810930, -1.386294])
     actual = am.phi(o, e)
 
     assert_series_equal(actual, expected)
 
+
 @pytest.mark.helpers
 def test_phi_zero():
 
-    o = Series([0,0,0,0])
-    e = Series([0,0,0,0])
+    o = Series([0, 0, 0, 0])
+    e = Series([0, 0, 0, 0])
 
     expected = Series([0.0, 0.0, 0.0, 0.0])
     actual = am.phi(o, e)
@@ -93,33 +41,34 @@ def test_phi_zero():
 ######
 
 @pytest.mark.mi
-def test_mutual_information_single(sample_dataframe):
+def test_mutual_information_single(fixed_dataframe):
 
-    df = sample_dataframe
+    df = fixed_dataframe
     m = df.apply(am.mutual_information, axis=1)
     assert m[0] == 1.0
 
 
 @pytest.mark.mi
-def test_mutual_information(sample_dataframe):
+def test_mutual_information(fixed_dataframe):
 
-    df = sample_dataframe
+    df = fixed_dataframe
     df_ams = am.calculate_measures(df, ['mutual_information'])
     assert df_ams['mutual_information'][0] == 1.0
 
 
 @pytest.mark.mi
-@pytest.mark.nan
-def test_mutual_information_nan(invalid_dataframe):
-    df = invalid_dataframe
+@pytest.mark.invalid
+def test_mutual_information_invalid(invalid_dataframe):
 
+    df = invalid_dataframe
     with pytest.raises(ValueError):
         am.calculate_measures(df, ['mutual_information'])
 
 
 @pytest.mark.mi
 @pytest.mark.zero
-def test_mutual_information_with_zeros(zero_dataframe):
+def test_mutual_information_zero(zero_dataframe):
+
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['mutual_information'])
     assert isnan(df_ams['mutual_information'].iloc[0])
@@ -130,17 +79,17 @@ def test_mutual_information_with_zeros(zero_dataframe):
 ########
 
 @pytest.mark.dice
-def test_dice(sample_dataframe):
+def test_dice(fixed_dataframe):
 
-    df = sample_dataframe
+    df = fixed_dataframe
     df_ams = am.calculate_measures(df, ['dice'])
 
     assert df_ams['dice'][0] == 1.0
 
 
 @pytest.mark.dice
-@pytest.mark.nan
-def test_dice_nan(invalid_dataframe):
+@pytest.mark.invalid
+def test_dice_invalid(invalid_dataframe):
 
     df = invalid_dataframe
     with pytest.raises(ValueError):
@@ -149,7 +98,7 @@ def test_dice_nan(invalid_dataframe):
 
 @pytest.mark.dice
 @pytest.mark.zero
-def test_dice_with_zeros(zero_dataframe):
+def test_dice_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['dice'])
     assert isnan(df_ams['dice'].iloc[0])
@@ -160,24 +109,24 @@ def test_dice_with_zeros(zero_dataframe):
 ##########
 
 @pytest.mark.t_score
-def test_t_score_single(sample_dataframe):
+def test_t_score_single(fixed_dataframe):
 
-    df = sample_dataframe
+    df = fixed_dataframe
     m = df.apply(am.t_score, axis=1)
     assert m[0] == 2.846049894151541
 
 
 @pytest.mark.t_score
-def test_t_score(sample_dataframe):
+def test_t_score(fixed_dataframe):
 
-    df = sample_dataframe
+    df = fixed_dataframe
     df_ams = am.calculate_measures(df, ['t_score'])
     assert df_ams['t_score'][0] == 2.846049894151541
 
 
 @pytest.mark.t_score
-@pytest.mark.nan
-def test_t_score_nan(invalid_dataframe):
+@pytest.mark.invalid
+def test_t_score_invalid(invalid_dataframe):
     df = invalid_dataframe
     with pytest.raises(ValueError):
         am.calculate_measures(df, ['t_score'])
@@ -185,7 +134,7 @@ def test_t_score_nan(invalid_dataframe):
 
 @pytest.mark.t_score
 @pytest.mark.zero
-def test_t_score_with_zeros(zero_dataframe):
+def test_t_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['t_score'])
     assert isnan(df_ams['t_score'].iloc[0])
@@ -196,15 +145,15 @@ def test_t_score_with_zeros(zero_dataframe):
 ##########
 
 @pytest.mark.z_score
-def test_z_score(sample_dataframe):
+def test_z_score(fixed_dataframe):
 
-    df = sample_dataframe
+    df = fixed_dataframe
     df_ams = am.calculate_measures(df, ['z_score'])
     assert df_ams['z_score'][0] == 9.0
 
 
 @pytest.mark.z_score
-@pytest.mark.nan
+@pytest.mark.invalid
 def test_z_score_nan(invalid_dataframe):
     df = invalid_dataframe
     with pytest.raises(ValueError):
@@ -213,27 +162,27 @@ def test_z_score_nan(invalid_dataframe):
 
 @pytest.mark.z_score
 @pytest.mark.zero
-def test_z_score_with_zeros(zero_dataframe):
+def test_z_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['z_score'])
     assert isnan(df_ams['z_score'].iloc[0])
 
 
-#############
-# LOGLIKELI #
-#############
+#################
+# LOGLIKELIHOOD #
+#################
 
 @pytest.mark.log_likelihood
-def test_log_likelihood(sample_dataframe):
+def test_log_likelihood(fixed_dataframe):
 
-    df = sample_dataframe
+    df = fixed_dataframe
     df_ams = am.calculate_measures(df, ['log_likelihood'])
     assert df_ams['log_likelihood'][0] == 65.01659467828966
 
 
 @pytest.mark.log_likelihood
-@pytest.mark.nan
-def test_log_likelihood_nan(invalid_dataframe):
+@pytest.mark.invalid
+def test_log_likelihood_invalid(invalid_dataframe):
     df = invalid_dataframe
     with pytest.raises(ValueError):
         am.calculate_measures(df, ['log_likelihood'])
@@ -241,38 +190,170 @@ def test_log_likelihood_nan(invalid_dataframe):
 
 @pytest.mark.log_likelihood
 @pytest.mark.zero
-def test_log_likelihood_with_zeros(zero_dataframe):
+def test_log_likelihood_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['log_likelihood'])
-    assert isnan(df_ams['log_likelihood'].iloc[0])
+    assert df_ams['log_likelihood'].iloc[0] == 0.0
 
 
-######
-# hypergeometric-likelihood #
-######
+#############################
+# hypergeometric likelihood #
+#############################
+# Not available via calculate_measures due to numerical instability
 
+@pytest.mark.choose
 @pytest.mark.hypergeometric_likelihood
-def test_hypergeometric_likelihood(sample_dataframe):
-    df = sample_dataframe
-    df = df.join(fq.observed_frequencies(df), rsuffix='_')
-    # Not available via calculate_measures due to performance issues
+def test_hypergeometric_likelihood(fixed_dataframe):
+    df = fixed_dataframe
     df_ams = am.hypergeometric_likelihood(df)
     assert df_ams[0] == 5.776904234533874e-14
 
 
+@pytest.mark.choose
 @pytest.mark.hypergeometric_likelihood
-@pytest.mark.nan
-def test_hypergeometric_likelihood_nan(invalid_dataframe):
-    df = invalid_dataframe
-    with pytest.raises(ValueError):
-        am.calculate_measures(df, ['hypergeometric_likelihood'])
+def test_hypergeometric_likelihood_brown_overflow(brown_dataframe):
+    df = brown_dataframe
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    df = df.head(10)
+    df['hypergeometric_likelihood'] = am.hypergeometric_likelihood(df)
+    assert df['hypergeometric_likelihood'].isnull().any()
 
 
+@pytest.mark.choose
 @pytest.mark.hypergeometric_likelihood
 @pytest.mark.zero
-def test_hypergeometric_likelihood_with_zeros(zero_dataframe):
+def test_hypergeometric_likelihood_zero(zero_dataframe):
     df = zero_dataframe
     df = df.join(fq.observed_frequencies(df), rsuffix='_')
-    # Not available via calculate_measures due to performance issues
     ams = am.hypergeometric_likelihood(df)
     assert ams[0] == 1.0
+
+
+#############################
+# binomial likelihood #
+#############################
+# Not available via calculate_measures due to numerical instability
+
+@pytest.mark.choose
+@pytest.mark.binomial_likelihood
+def test_binomial_likelihood(fixed_dataframe):
+    df = fixed_dataframe
+    df_ams = am.binomial_likelihood(df)
+    assert df_ams[0] == 7.006035693977206e-08
+
+
+@pytest.mark.choose
+@pytest.mark.binomial_likelihood
+def test_binomial_likelihood_brown(brown_dataframe):
+    df = brown_dataframe
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    df = df.join(fq.expected_frequencies(df), rsuffix='_')
+    df = df.head(100)
+    df['binomial_likelihood'] = am.binomial_likelihood(df)
+    assert df['binomial_likelihood'][0] == 0.02277706874213509
+
+
+@pytest.mark.choose
+@pytest.mark.binomial_likelihood
+def test_binomial_likelihood_brown_overflow(brown_dataframe):
+    df = brown_dataframe
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    df = df.join(fq.expected_frequencies(df), rsuffix='_')
+    df = df.head(1000)
+    df['binomial_likelihood'] = am.binomial_likelihood(df)
+    assert df['binomial_likelihood'].isnull().any()
+
+
+@pytest.mark.choose
+@pytest.mark.binomial_likelihood
+@pytest.mark.zero
+def test_binomial_likelihood_zero(zero_dataframe):
+    df = zero_dataframe
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    ams = am.binomial_likelihood(df)
+    assert ams[0] == 1.0
+
+
+#############
+# Log Ratio #
+#############
+
+@pytest.mark.log_ratio
+def test_log_ratio(fixed_dataframe):
+
+    df = fixed_dataframe
+    df_ams = am.calculate_measures(df, ['log_ratio'])
+    assert df_ams['log_ratio'][0] == 7.491853096329675
+
+
+@pytest.mark.log_ratio
+@pytest.mark.invalid
+def test_log_ratio_invalid(invalid_dataframe):
+
+    df = invalid_dataframe
+    with pytest.raises(ValueError):
+        am.calculate_measures(df, ['log_ratio'])
+
+
+@pytest.mark.log_ratio
+@pytest.mark.zero
+def test_log_ratio_zero(zero_dataframe):
+
+    df = zero_dataframe
+    df_ams = am.calculate_measures(df, ['log_ratio'])
+    assert isnan(df_ams['log_ratio'].iloc[0])
+
+
+##########################
+# Conservative Log Ratio #
+##########################
+
+@pytest.mark.conservative_log_ratio
+def test_conservative_log_ratio(fixed_dataframe):
+
+    df = fixed_dataframe
+    df_ams = am.calculate_measures(df, ['log_ratio', 'conservative_log_ratio'])
+    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
+    assert(df_ams['conservative_log_ratio'].iloc[0] == 0.7969356993077386)
+
+
+@pytest.mark.conservative_log_ratio
+def test_conservative_log_ratio_one_sided(fixed_dataframe):
+
+    df = fixed_dataframe
+    df_ams = am.calculate_measures(df, ['conservative_log_ratio'])
+    df_am = am.conservative_log_ratio(df, one_sided=True)
+    df_am.name = 'clr_one_sided'
+    df_ams = df_ams.join(df_am)
+    assert((abs(df_ams['conservative_log_ratio']) <= abs(df_ams['clr_one_sided'])).all())
+
+
+########
+# GOLD #
+########
+
+@pytest.mark.gold
+def test_measures_ucs(ucs_dataframe):
+
+    df = ucs_dataframe
+    df = df.join(am.calculate_measures(df))
+
+    for ucs, assoc in [('am.Dice', 'dice'),
+                       ('am.t.score', 't_score'),
+                       ('am.z.score', 'z_score'),
+                       ('am.MI', 'mutual_information'),
+                       ('am.log.likelihood', 'log_likelihood')]:
+
+        assert(round(df[ucs], 10).equals(round(df[assoc], 10)))
+
+
+@pytest.mark.gold
+def test_measures_log_ratio_gold(log_ratio_dataframe):
+
+    df = log_ratio_dataframe
+    df = df.join(am.calculate_measures(df, ['log_ratio', 'conservative_log_ratio']))
+
+    for r, assoc in [('lr', 'log_ratio'),
+                     ('clr', 'conservative_log_ratio')]:
+
+        assert(round(df[r], 3).equals(round(df[assoc], 3)))
