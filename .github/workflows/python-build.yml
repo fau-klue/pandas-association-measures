@@ -2,9 +2,9 @@ name: build
 
 on:
   push:
-    branches: [ main, v0.1.6, github-workflow ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
