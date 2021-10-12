@@ -25,14 +25,14 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -q pipenv
         make install
-    - name: Lint
-      continue-on-error: true
-      run: |
-        make lint
     - name: Build
       run: |
         make compile
         make build
+    - name: Lint
+      continue-on-error: true
+      run: |
+        make lint
     - name: Test
       run: |
         make test
