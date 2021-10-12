@@ -5,8 +5,9 @@ http://www.collocations.de/AM/index.html
 """
 
 
-import numpy as np
 from statistics import NormalDist  # requires python version >= 3.8
+import numpy as np
+
 from .binomial import choose
 from .frequencies import expected_frequencies, observed_frequencies
 
@@ -119,11 +120,41 @@ def hypergeometric_likelihood(df):
     :rtype: pd.Series
     """
 
+    df = df.astype(
+        {'O11': 'int32', 'O12': 'int32', 'O21': 'int32', 'O22': 'int32'}
+    )
+
+    np.seterr(all='ignore')
     c1 = CHOOSE(df['O11'] + df['O21'], df['O11'])
     c2 = CHOOSE(df['O12'] + df['O22'], df['O12'])
     c3 = CHOOSE(df['O11'] + df['O12'] + df['O21'] + df['O22'], df['O11'] + df['O12'])
+    am = c1 / c3 * c2
+    np.seterr(all='warn')
 
-    am = c1 * c2 / c3
+    return am
+
+
+def binomial_likelihood(df):
+    """
+    Calculate binomial likelihood
+
+    :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22, E11
+    :return: hypergeometric likelihood
+    :rtype: pd.Series
+    """
+
+    df = df.astype(
+        {'O11': 'int32', 'O12': 'int32', 'O21': 'int32', 'O22': 'int32'}
+    )
+
+    N = df['O11'] + df['O12'] + df['O21'] + df['O22']
+
+    np.seterr(all='ignore')
+    c1 = CHOOSE(N, df['O11'])
+    c2 = (df['E11'] / N) ** df['O11']
+    c3 = (1 - df['E11'] / N) ** (N - df['O11'])
+    am = c1 * c2 * c3
+    np.seterr(all='warn')
 
     return am
 
