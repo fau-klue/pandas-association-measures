@@ -113,10 +113,10 @@ def log_likelihood(df, signed=True):
 
 def hypergeometric_likelihood(df):
     """
-    Calculate hypergeometric likelihood
+    Calculate hypergeometric-likelihood
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
-    :return: hypergeometric likelihood
+    :return: hypergeometric-likelihood
     :rtype: pd.Series
     """
 
@@ -136,10 +136,10 @@ def hypergeometric_likelihood(df):
 
 def binomial_likelihood(df):
     """
-    Calculate binomial likelihood
+    Calculate binomial-likelihood
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22, E11
-    :return: hypergeometric likelihood
+    :return: binomial-likelihood
     :rtype: pd.Series
     """
 
@@ -161,10 +161,10 @@ def binomial_likelihood(df):
 
 def log_ratio(df, disc=.5):
     """
-    Calculate log ratio, a.k.a. relative risk
+    Calculate log-ratio, a.k.a. relative risk
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
-    :return: log ratio
+    :return: log-ratio
     :rtype: pd.Series
     """
 
