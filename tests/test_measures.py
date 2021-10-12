@@ -74,15 +74,6 @@ def test_mutual_information_zero(zero_dataframe):
     assert isnan(df_ams['mutual_information'].iloc[0])
 
 
-@pytest.mark.mi
-@pytest.mark.random
-@pytest.mark.skip('no need for random dataframes')
-def test_mutual_information_random(random_dataframe):
-
-    df = random_dataframe
-    am.calculate_measures(df, ['mutual_information'])
-
-
 ########
 # DICE #
 ########
@@ -208,31 +199,78 @@ def test_log_likelihood_zero(zero_dataframe):
 #############################
 # hypergeometric likelihood #
 #############################
+# Not available via calculate_measures due to numerical instability
 
+@pytest.mark.choose
 @pytest.mark.hypergeometric_likelihood
 def test_hypergeometric_likelihood(fixed_dataframe):
     df = fixed_dataframe
-    df = df.join(fq.observed_frequencies(df), rsuffix='_')
-    # Not available via calculate_measures due to performance issues
     df_ams = am.hypergeometric_likelihood(df)
     assert df_ams[0] == 5.776904234533874e-14
 
 
+@pytest.mark.choose
 @pytest.mark.hypergeometric_likelihood
-@pytest.mark.invalid
-def test_hypergeometric_likelihood_invalid(invalid_dataframe):
-    df = invalid_dataframe
-    with pytest.raises(ValueError):
-        am.calculate_measures(df, ['hypergeometric_likelihood'])
+def test_hypergeometric_likelihood_brown_overflow(brown_dataframe):
+    df = brown_dataframe
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    df = df.head(10)
+    df['hypergeometric_likelihood'] = am.hypergeometric_likelihood(df)
+    assert df['hypergeometric_likelihood'].isnull().any()
 
 
+@pytest.mark.choose
 @pytest.mark.hypergeometric_likelihood
 @pytest.mark.zero
 def test_hypergeometric_likelihood_zero(zero_dataframe):
     df = zero_dataframe
     df = df.join(fq.observed_frequencies(df), rsuffix='_')
-    # Not available via calculate_measures due to performance issues
     ams = am.hypergeometric_likelihood(df)
+    assert ams[0] == 1.0
+
+
+#############################
+# binomial likelihood #
+#############################
+# Not available via calculate_measures due to numerical instability
+
+@pytest.mark.choose
+@pytest.mark.binomial_likelihood
+def test_binomial_likelihood(fixed_dataframe):
+    df = fixed_dataframe
+    df_ams = am.binomial_likelihood(df)
+    assert df_ams[0] == 7.006035693977206e-08
+
+
+@pytest.mark.choose
+@pytest.mark.binomial_likelihood
+def test_binomial_likelihood_brown(brown_dataframe):
+    df = brown_dataframe
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    df = df.join(fq.expected_frequencies(df), rsuffix='_')
+    df = df.head(100)
+    df['binomial_likelihood'] = am.binomial_likelihood(df)
+    assert df['binomial_likelihood'][0] == 0.02277706874213509
+
+
+@pytest.mark.choose
+@pytest.mark.binomial_likelihood
+def test_binomial_likelihood_brown_overflow(brown_dataframe):
+    df = brown_dataframe
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    df = df.join(fq.expected_frequencies(df), rsuffix='_')
+    df = df.head(1000)
+    df['binomial_likelihood'] = am.binomial_likelihood(df)
+    assert df['binomial_likelihood'].isnull().any()
+
+
+@pytest.mark.choose
+@pytest.mark.binomial_likelihood
+@pytest.mark.zero
+def test_binomial_likelihood_zero(zero_dataframe):
+    df = zero_dataframe
+    df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    ams = am.binomial_likelihood(df)
     assert ams[0] == 1.0
 
 

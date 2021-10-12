@@ -108,3 +108,13 @@ def log_ratio_dataframe():
     df = pd.read_csv("tests/log-ratio-gold.tsv", index_col=0, sep="\t")
 
     return df
+
+
+@pytest.fixture(scope='function')
+def brown_dataframe():
+    """ Sample DataFrame with real data counts from Brown Corpus.
+
+    """
+    df = pd.read_csv("tests/brown.csv", index_col=0)
+
+    return df
