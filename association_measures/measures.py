@@ -180,6 +180,7 @@ def log_ratio(df, disc=.5):
     Calculate log-ratio, a.k.a. relative risk
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
+    :param float disc: discounting (or smoothing) parameter for O21 == 0
     :return: log-ratio
     :rtype: pd.Series
     """
@@ -251,13 +252,18 @@ def binomial_likelihood(df):
 # CONSERVATIVE ESTIMATES #
 ##########################
 
-def conservative_log_ratio(df, alpha=.01, correct=True, disc=.5, one_sided=False):
+def conservative_log_ratio(df, alpha=.01, correct='Bonferroni', disc=.5, one_sided=False):
     """
     Calculate conservative log-ratio, i.e. the binary logarithm of the
     lower bound of the confidence interval of relative risk at the
     (Bonferroni-corrected) confidence level.
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
+    :param float alpha: significance level
+    :param str correct: correction type for several tests (None | "Bonferroni" | "Sidak")
+    :param float disc: discounting (or smoothing) parameter for O21 == 0
+    :param bool one_sided: calculate one- or two-sided confidence interval
+
     :return: conservative log-ratio
     :rtype: pd.Series
 
@@ -272,10 +278,15 @@ def conservative_log_ratio(df, alpha=.01, correct=True, disc=.5, one_sided=False
     R2 = df['O21'] + df['O22']
     lrr = np.log((df['O11'] / O21_disc) / (R1 / R2))
 
-    # Bonferroni correction
-    if correct:
+    # Bonferroni or Sidak correction
+    if isinstance(correct, str):
         vocab = (df['O11'] >= 1).sum()
-        alpha /= vocab
+        if correct == 'Bonferroni':
+            alpha /= vocab
+        elif correct == "Sidak":
+            alpha = 1 - (1 - alpha) ** (1 / vocab)
+        else:
+            raise ValueError('correc should be either "Bonferroni" or "Sidak".')
 
     # get respective quantile of normal distribution
     if not one_sided:
