@@ -35,15 +35,88 @@ def phi(o, e):
     return values
 
 
+def list_measures():
+    """
+    Return a dictionary of implemented measures (name: measure)
+
+    :return: dictionary of measures
+    :rtype: dict
+    """
+
+    return {
+        # asymptotic hypothesis tests
+        'z_score': z_score,
+        't_score': t_score,
+        'log_likelihood': log_likelihood,
+        # point estimates of association strength
+        'dice': dice,
+        'log_ratio': log_ratio,
+        # likelihood measures
+        # 'hypergeometric_likelihood': hypergeometric_likelihood,
+        # 'binomial_likelihood': binomial_likelihood,
+        # information theory
+        'mutual_information': mutual_information,
+        'local_mutual_information': local_mutual_information,
+        # conservative estimates
+        'conservative_log_ratio': conservative_log_ratio
+    }
+
+
+def calculate_measures(df, measures=None, freq=False):
+    """
+    Calculate a list of association measures. Defaults to all available
+    (and numerically stable) measures.
+
+    :param pandas.DataFrame df: Dataframe with reasonably-named freq. signature
+    :param list measures: names of AMs (or AMs)
+    :param bool freq: also return frequency signatures?
+
+    :return: association measures
+    :rtype: pandas.DataFrame
+    """
+
+    ams_all = list_measures()
+    freq_columns = ['O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']
+
+    # take (or create) appropriate columns
+    if not (df.columns.isin(freq_columns)).all():
+        df_obs = observed_frequencies(df)
+        df_exp = expected_frequencies(df)
+        df = df_obs.join(df_exp)
+    df = df[freq_columns]
+
+    # select measures
+    if measures is not None:
+        if isinstance(measures[0], str):
+            measures = [ams_all[k] for k in measures if k in ams_all.keys()]
+    else:
+        measures = [ams_all[k] for k in ams_all]
+
+    # calculate measures
+    for measure in measures:
+        df[measure.__name__] = measure(df)
+
+    if not freq:
+        df = df.drop(freq_columns, axis=1)
+
+    return df
+
+
+###############################
+# ASYMPTOTIC HYPOTHESIS TESTS #
+###############################
+
 def z_score(df):
     """
     Calculate z-score
 
-    :param DataFrame df: pd.DataFrame with columns O11 and E11
+    :param DataFrame df: DataFrame with columns O11 and E11
     :return: z-score
     :rtype: pd.Series
     """
+
     am = (df['O11'] - df['E11']) / np.sqrt(df['E11'])
+
     return am
 
 
@@ -57,33 +130,6 @@ def t_score(df):
     """
 
     am = (df['O11'] - df['E11']) / np.sqrt(df['O11'])
-    return am
-
-
-def mutual_information(df):
-    """
-    Calculate Mutual Information
-
-    :param DataFrame df: pd.DataFrame with columns O11 and E11
-    :return: mutual information
-    :rtype: pd.Series
-    """
-
-    am = np.log10(df['O11'] / df['E11'])
-
-    return am
-
-
-def dice(df):
-    """
-    Calculate Dice coefficient
-
-    :param DataFrame df: pd.DataFrame with columns O11, O12, O21
-    :return: dice
-    :rtype: pd.Series
-    """
-
-    am = (2 * df['O11']) / (2 * df['O11'] + df['O12'] + df['O21'])
 
     return am
 
@@ -110,6 +156,48 @@ def log_likelihood(df, signed=True):
 
     return am
 
+
+###########################################
+# POINT ESTIMATES OF ASSOCIATION STRENGTH #
+###########################################
+
+def dice(df):
+    """
+    Calculate Dice coefficient
+
+    :param DataFrame df: pd.DataFrame with columns O11, O12, O21
+    :return: dice
+    :rtype: pd.Series
+    """
+
+    am = (2 * df['O11']) / (2 * df['O11'] + df['O12'] + df['O21'])
+
+    return am
+
+
+def log_ratio(df, disc=.5):
+    """
+    Calculate log-ratio, a.k.a. relative risk
+
+    :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
+    :return: log-ratio
+    :rtype: pd.Series
+    """
+
+    # questionable discounting according to Hardie (2014)
+    O21_disc = df['O21'].where(df['O21'] != 0, disc)
+
+    R1 = df['O11'] + df['O12']
+    R2 = df['O21'] + df['O22']
+
+    am = np.log2((df['O11'] / O21_disc) / (R1 / R2))
+
+    return am
+
+
+#######################
+# LIKELIHOOD MEASURES #
+#######################
 
 def hypergeometric_likelihood(df):
     """
@@ -159,25 +247,9 @@ def binomial_likelihood(df):
     return am
 
 
-def log_ratio(df, disc=.5):
-    """
-    Calculate log-ratio, a.k.a. relative risk
-
-    :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
-    :return: log-ratio
-    :rtype: pd.Series
-    """
-
-    # questionable discounting according to Hardie (2014)
-    O21_disc = df['O21'].where(df['O21'] != 0, disc)
-
-    R1 = df['O11'] + df['O12']
-    R2 = df['O21'] + df['O22']
-
-    am = np.log2((df['O11'] / O21_disc) / (R1 / R2))
-
-    return am
-
+##########################
+# CONSERVATIVE ESTIMATES #
+##########################
 
 def conservative_log_ratio(df, alpha=.01, correct=True, disc=.5, one_sided=False):
     """
@@ -221,63 +293,38 @@ def conservative_log_ratio(df, alpha=.01, correct=True, disc=.5, one_sided=False
     clrr = ci_min.where(lrr >= 0, ci_max)
 
     # adjust to binary logarithm
-    clrr = clrr / np.log(2)
+    clrr /= np.log(2)
 
     return clrr
 
 
-def list_measures():
-    """ return a dictionary of implemented measures (name: measure)
+######################
+# INFORMATION THEORY #
+######################
 
-    :return: dictionary of measures
-    :rtype: dict
+def mutual_information(df):
+    """
+    Calculate Mutual Information
+
+    :param DataFrame df: pd.DataFrame with columns O11 and E11
+    :return: mutual information
+    :rtype: pd.Series
     """
 
-    return {
-        'z_score': z_score,
-        't_score': t_score,
-        'dice': dice,
-        'log_likelihood': log_likelihood,
-        'mutual_information': mutual_information,
-        'log_ratio': log_ratio,
-        'conservative_log_ratio': conservative_log_ratio
-    }
+    am = np.log10(df['O11'] / df['E11'])
+
+    return am
 
 
-def calculate_measures(df, measures=None, freq=False):
+def local_mutual_information(df):
     """
-    Calculate a list of association measures. Defaults to all available measures.
+    Calculate Local Mutual Information
 
-    :param pandas.DataFrame df: Dataframe with reasonably-named freq. signature
-    :param list measures: names of AMs (or AMs)
-    :param bool freq: return frequency signatures?
-
-    :return: association measures
-    :rtype: pandas.DataFrame
+    :param DataFrame df: pd.DataFrame with columns O11 and E11
+    :return: mutual information
+    :rtype: pd.Series
     """
 
-    ams_all = list_measures()
-    freq_columns = ['O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']
+    am = df['O11'] * np.log10(df['O11'] / df['E11'])
 
-    # take (or create) appropriate columns
-    if not (df.columns.isin(freq_columns)).all():
-        df_obs = observed_frequencies(df)
-        df_exp = expected_frequencies(df)
-        df = df_obs.join(df_exp)
-    df = df[freq_columns]
-
-    # select measures
-    if measures is not None:
-        if isinstance(measures[0], str):
-            measures = [ams_all[k] for k in measures if k in ams_all.keys()]
-    else:
-        measures = [ams_all[k] for k in ams_all]
-
-    # calculate measures
-    for measure in measures:
-        df[measure.__name__] = measure(df)
-
-    if not freq:
-        df = df.drop(freq_columns, axis=1)
-
-    return df
+    return am

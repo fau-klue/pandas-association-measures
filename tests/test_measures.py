@@ -342,7 +342,8 @@ def test_measures_ucs(ucs_dataframe):
                        ('am.t.score', 't_score'),
                        ('am.z.score', 'z_score'),
                        ('am.MI', 'mutual_information'),
-                       ('am.log.likelihood', 'log_likelihood')]:
+                       ('am.log.likelihood', 'log_likelihood'),
+                       ('am.local.MI', 'local_mutual_information')]:
 
         assert(round(df[ucs], 10).equals(round(df[assoc], 10)))
 
