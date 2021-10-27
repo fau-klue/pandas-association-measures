@@ -79,11 +79,11 @@ def calculate_measures(df, measures=None, freq=False):
     freq_columns = ['O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']
 
     # take (or create) appropriate columns
-    if not (df.columns.isin(freq_columns)).all():
+    if not set(freq_columns).issubset(set(df.columns)):
         df_obs = observed_frequencies(df)
         df_exp = expected_frequencies(df)
         df = df_obs.join(df_exp)
-    df = df[freq_columns]
+    df = df[freq_columns].copy()
 
     # select measures
     if measures is not None:
