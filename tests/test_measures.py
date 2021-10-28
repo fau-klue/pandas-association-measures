@@ -120,7 +120,7 @@ def test_dice_zero(zero_dataframe):
 def test_t_score_single(fixed_dataframe):
 
     df = fixed_dataframe
-    m = df.apply(am.t_score, axis=1)
+    m = am.t_score(df)
     assert m[0] == 2.846049894151541
 
 
@@ -203,6 +203,26 @@ def test_log_likelihood_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['log_likelihood'], freq=True)
     assert df_ams['log_likelihood'].iloc[0] == 4087.276827119023
+
+
+#############
+# SIMPLE LL #
+#############
+
+@pytest.mark.simple_ll
+def test_simple_ll(fixed_dataframe):
+
+    df = fixed_dataframe
+    df_ams = am.calculate_measures(df, ['simple_ll'])
+    assert df_ams['simple_ll'][0] == 28.05170185988092
+
+
+@pytest.mark.simple_ll
+@pytest.mark.zero
+def test_simple_ll_zero(zero_dataframe):
+    df = zero_dataframe
+    df_ams = am.calculate_measures(df, ['simple_ll'], freq=True)
+    assert df_ams['simple_ll'].iloc[0] == 264.9157890046413
 
 
 #############################
@@ -362,7 +382,8 @@ def test_measures_ucs(ucs_dataframe):
                        ('am.z.score', 'z_score'),
                        ('am.MI', 'mutual_information'),
                        ('am.log.likelihood', 'log_likelihood'),
-                       ('am.local.MI', 'local_mutual_information')]:
+                       ('am.local.MI', 'local_mutual_information'),
+                       ('am.simple.ll', 'simple_ll')]:
 
         assert(round(df[ucs], 10).equals(round(df[assoc], 10)))
 

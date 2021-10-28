@@ -28,6 +28,7 @@ def list_measures():
         'z_score': z_score,
         't_score': t_score,
         'log_likelihood': log_likelihood,
+        'simple_ll': simple_ll,
         # point estimates of association strength
         'dice': dice,
         'log_ratio': log_ratio,
@@ -138,6 +139,29 @@ def log_likelihood(df, signed=True):
     jj = df['O22'] * np.log(O22_disc / df['E22'])
 
     am = 2 * (ii + ij + ji + jj)
+
+    if signed:
+        am = np.sign(df['O11'] - df['E11']) * am
+
+    return am
+
+
+def simple_ll(df, signed=True):
+    """
+    Calculate simple log-likelihood
+
+    :param DataFrame df: pd.DataFrame with columns O11, E11
+    :param bool signed: return negative values for rows with O11 < E11?
+    :return: simple log-likelihood
+    :rtype: pd.Series
+    """
+
+    # NB: discounting will not have any effect since term will be multiplied by original O11 = 0
+    O11_disc = df['O11'].where(df['O11'] != 0, 1)
+
+    log_term = df['O11'] * np.log(O11_disc / df['E11'])
+
+    am = 2 * (log_term - (df['O11'] - df['E11']))
 
     if signed:
         am = np.sign(df['O11'] - df['E11']) * am
