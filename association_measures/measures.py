@@ -312,8 +312,6 @@ def conservative_log_ratio(df, alpha=.01, correct='Bonferroni', disc=.5, one_sid
     z_factor = NormalDist().inv_cdf(1 - alpha)
 
     # asymptotic standard deviation of log(RR) according to Wikipedia
-    R1 = df['O11'] + df['O12']
-    R2 = df['O21'] + df['O22']
     lrr_sd = np.sqrt(1/O11_disc + 1/O21_disc - 1/R1 - 1/R2)
 
     # calculate and apply appropriate boundary
