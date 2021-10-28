@@ -1,39 +1,9 @@
 import pytest
-from pandas import Series
-from pandas.testing import assert_series_equal
 from numpy import isnan
 
 
 import association_measures.measures as am
 import association_measures.frequencies as fq
-
-
-###########
-# Helpers #
-###########
-
-@pytest.mark.helpers
-def test_phi():
-
-    o = Series([4, 3, 2, 1])
-    e = Series([1, 2, 3, 4])
-
-    expected = Series([5.545177, 1.216395, -0.810930, -1.386294])
-    actual = am.phi(o, e)
-
-    assert_series_equal(actual, expected)
-
-
-@pytest.mark.helpers
-def test_phi_zero():
-
-    o = Series([0, 0, 0, 0])
-    e = Series([0, 0, 0, 0])
-
-    expected = Series([0.0, 0.0, 0.0, 0.0])
-    actual = am.phi(o, e)
-
-    assert_series_equal(actual, expected)
 
 
 ######
@@ -44,8 +14,8 @@ def test_phi_zero():
 def test_mutual_information_single(fixed_dataframe):
 
     df = fixed_dataframe
-    m = df.apply(am.mutual_information, axis=1)
-    assert m[0] == 1.0
+    df_ams = am.mutual_information(df)
+    assert df_ams[0] == 1.0
 
 
 @pytest.mark.mi
@@ -71,7 +41,45 @@ def test_mutual_information_zero(zero_dataframe):
 
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['mutual_information'])
-    assert isnan(df_ams['mutual_information'].iloc[0])
+    assert df_ams['mutual_information'].iloc[0] == 0.06167489255030763
+
+
+############
+# LOCAL MI #
+############
+
+@pytest.mark.local_mi
+def test_local_mi_single(fixed_dataframe):
+
+    df = fixed_dataframe
+    df_ams = am.local_mutual_information(df)
+    assert df_ams[0] == 10.0
+
+
+@pytest.mark.local_mi
+def test_local_mi(fixed_dataframe):
+
+    df = fixed_dataframe
+    df_ams = am.calculate_measures(df, ['local_mutual_information'])
+    assert df_ams['local_mutual_information'][0] == 10.0
+
+
+@pytest.mark.local_mi
+@pytest.mark.invalid
+def test_local_mi_invalid(invalid_dataframe):
+
+    df = invalid_dataframe
+    with pytest.raises(ValueError):
+        am.calculate_measures(df, ['local_mutual_information'])
+
+
+@pytest.mark.local_mi
+@pytest.mark.zero
+def test_local_mi_zero(zero_dataframe):
+
+    df = zero_dataframe
+    df_ams = am.calculate_measures(df, ['local_mutual_information'], freq=True)
+    assert df_ams['local_mutual_information'].iloc[0] == 848.9548959549845
 
 
 ########
@@ -101,7 +109,7 @@ def test_dice_invalid(invalid_dataframe):
 def test_dice_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['dice'])
-    assert isnan(df_ams['dice'].iloc[0])
+    df_ams['dice'][0] == 0.16831229174945742
 
 
 ##########
@@ -132,12 +140,13 @@ def test_t_score_invalid(invalid_dataframe):
         am.calculate_measures(df, ['t_score'])
 
 
+@pytest.mark.now
 @pytest.mark.t_score
 @pytest.mark.zero
 def test_t_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['t_score'])
-    assert isnan(df_ams['t_score'].iloc[0])
+    df_ams['t_score'][0] == 15.532438056926377
 
 
 ##########
@@ -165,7 +174,7 @@ def test_z_score_nan(invalid_dataframe):
 def test_z_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['z_score'])
-    assert isnan(df_ams['z_score'].iloc[0])
+    df_ams['z_score'].iloc[0] == 16.675431342469118
 
 
 #################
@@ -192,8 +201,8 @@ def test_log_likelihood_invalid(invalid_dataframe):
 @pytest.mark.zero
 def test_log_likelihood_zero(zero_dataframe):
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['log_likelihood'])
-    assert df_ams['log_likelihood'].iloc[0] == 0.0
+    df_ams = am.calculate_measures(df, ['log_likelihood'], freq=True)
+    assert df_ams['log_likelihood'].iloc[0] == 4087.276827119023
 
 
 #############################
@@ -225,8 +234,9 @@ def test_hypergeometric_likelihood_brown_overflow(brown_dataframe):
 def test_hypergeometric_likelihood_zero(zero_dataframe):
     df = zero_dataframe
     df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    df = df.join(fq.expected_frequencies(df), rsuffix='_')
     ams = am.hypergeometric_likelihood(df)
-    assert ams[0] == 1.0
+    assert isnan(ams[0])
 
 
 #############################
@@ -250,7 +260,7 @@ def test_binomial_likelihood_brown(brown_dataframe):
     df = df.join(fq.expected_frequencies(df), rsuffix='_')
     df = df.head(100)
     df['binomial_likelihood'] = am.binomial_likelihood(df)
-    assert df['binomial_likelihood'][0] == 0.02277706874213509
+    assert df['binomial_likelihood'][0] == 0.00810143610212444
 
 
 @pytest.mark.choose
@@ -270,8 +280,9 @@ def test_binomial_likelihood_brown_overflow(brown_dataframe):
 def test_binomial_likelihood_zero(zero_dataframe):
     df = zero_dataframe
     df = df.join(fq.observed_frequencies(df), rsuffix='_')
+    df = df.join(fq.expected_frequencies(df), rsuffix='_')
     ams = am.binomial_likelihood(df)
-    assert ams[0] == 1.0
+    assert isnan(ams[0])
 
 
 #############
@@ -301,7 +312,7 @@ def test_log_ratio_zero(zero_dataframe):
 
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['log_ratio'])
-    assert isnan(df_ams['log_ratio'].iloc[0])
+    assert df_ams['log_ratio'][0] == 12.036450448790957
 
 
 ##########################
@@ -315,6 +326,14 @@ def test_conservative_log_ratio(fixed_dataframe):
     df_ams = am.calculate_measures(df, ['log_ratio', 'conservative_log_ratio'])
     assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
     assert(df_ams['conservative_log_ratio'].iloc[0] == 0.7969356993077386)
+
+
+@pytest.mark.conservative_log_ratio
+def test_conservative_log_ratio_zero(zero_dataframe):
+
+    df = zero_dataframe
+    df_ams = am.calculate_measures(df, ['log_ratio', 'conservative_log_ratio'])
+    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
 
 
 @pytest.mark.conservative_log_ratio

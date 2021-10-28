@@ -45,15 +45,10 @@ def random_dataframe():
 
 @pytest.fixture(scope='function')
 def zero_dataframe():
-    """ Sample DataFrame with zero data """
-    df = pd.DataFrame({'O11': np.zeros(10),
-                       'O12': np.zeros(10),
-                       'O21': np.zeros(10),
-                       'O22': np.zeros(10),
-                       'E11': np.zeros(10),
-                       'E12': np.zeros(10),
-                       'E21': np.zeros(10),
-                       'E22': np.zeros(10)})
+    """ Sample DataFrame with lots of zeros """
+
+    df = pd.read_csv("tests/df-zeros.tsv", index_col=0,
+                     sep="\t", quoting=3, keep_default_na=False)
 
     return df
 

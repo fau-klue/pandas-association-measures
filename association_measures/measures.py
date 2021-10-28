@@ -15,26 +15,6 @@ from .frequencies import expected_frequencies, observed_frequencies
 CHOOSE = np.vectorize(choose)
 
 
-def phi(o, e):
-    """
-    Calculate phi(o,e):=o*log(o/e) with lim_{o↓0} phi(o,e)=0
-
-    :param Series o: pd.Series of observed frequencies
-    :param Series e: pd.Series of expected frequencies
-    :return: phi
-    :rtype: pd.Series
-    """
-
-    np.seterr(divide='ignore')
-
-    values = o * np.log(o / e)
-    values[values.isna()] = 0    # NaNs where o=0 → phi=0
-
-    np.seterr(divide='warn')
-
-    return values
-
-
 def list_measures():
     """
     Return a dictionary of implemented measures (name: measure)
@@ -75,17 +55,17 @@ def calculate_measures(df, measures=None, freq=False):
     :rtype: pandas.DataFrame
     """
 
-    ams_all = list_measures()
-    freq_columns = ['O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']
-
     # take (or create) appropriate columns
+    freq_columns = ['O11', 'O12', 'O21', 'O22', 'E11', 'E12', 'E21', 'E22']
     if not set(freq_columns).issubset(set(df.columns)):
         df_obs = observed_frequencies(df)
         df_exp = expected_frequencies(df)
         df = df_obs.join(df_exp)
-    df = df[freq_columns].copy()
+    else:
+        df = df[freq_columns].copy()
 
     # select measures
+    ams_all = list_measures()
     if measures is not None:
         if isinstance(measures[0], str):
             measures = [ams_all[k] for k in measures if k in ams_all.keys()]
@@ -120,16 +100,18 @@ def z_score(df):
     return am
 
 
-def t_score(df):
+def t_score(df, disc=.001):
     """
     Calculate t-score
 
     :param DataFrame df: pd.DataFrame with columns O11 and E11
+    :param float disc: discounting (or smoothing) parameter for O11 == 0
     :return: t-score
     :rtype: pd.Series
     """
 
-    am = (df['O11'] - df['E11']) / np.sqrt(df['O11'])
+    O11_disc = df['O11'].where(df['O11'] != 0, disc)
+    am = (df['O11'] - df['E11']) / np.sqrt(O11_disc)
 
     return am
 
@@ -144,10 +126,16 @@ def log_likelihood(df, signed=True):
     :rtype: pd.Series
     """
 
-    ii = phi(df['O11'], df['E11'])
-    ij = phi(df['O12'], df['E12'])
-    ji = phi(df['O21'], df['E21'])
-    jj = phi(df['O22'], df['E22'])
+    # NB: discounting will not have any effect since term will be multiplied by original Oij = 0
+    O11_disc = df['O11'].where(df['O11'] != 0, 1)
+    O12_disc = df['O12'].where(df['O12'] != 0, 1)
+    O21_disc = df['O21'].where(df['O21'] != 0, 1)
+    O22_disc = df['O22'].where(df['O22'] != 0, 1)
+
+    ii = df['O11'] * np.log(O11_disc / df['E11'])
+    ij = df['O12'] * np.log(O12_disc / df['E12'])
+    ji = df['O21'] * np.log(O21_disc / df['E21'])
+    jj = df['O22'] * np.log(O22_disc / df['E22'])
 
     am = 2 * (ii + ij + ji + jj)
 
@@ -180,18 +168,19 @@ def log_ratio(df, disc=.5):
     Calculate log-ratio, a.k.a. relative risk
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
-    :param float disc: discounting (or smoothing) parameter for O21 == 0
+    :param float disc: discounting (or smoothing) parameter for O11 == 0 and O21 == 0
     :return: log-ratio
     :rtype: pd.Series
     """
 
     # questionable discounting according to Hardie (2014)
+    O11_disc = df['O11'].where(df['O11'] != 0, disc)
     O21_disc = df['O21'].where(df['O21'] != 0, disc)
 
     R1 = df['O11'] + df['O12']
     R2 = df['O21'] + df['O22']
 
-    am = np.log2((df['O11'] / O21_disc) / (R1 / R2))
+    am = np.log2((O11_disc / O21_disc) / (R1 / R2))
 
     return am
 
@@ -233,7 +222,7 @@ def binomial_likelihood(df):
     """
 
     df = df.astype(
-        {'O11': 'int32', 'O12': 'int32', 'O21': 'int32', 'O22': 'int32'}
+        {'O11': 'int32', 'O12': 'int32', 'O21': 'int32', 'O22': 'int32', 'E11': 'int32'}
     )
 
     N = df['O11'] + df['O12'] + df['O21'] + df['O22']
@@ -261,7 +250,7 @@ def conservative_log_ratio(df, alpha=.01, correct='Bonferroni', disc=.5, one_sid
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
     :param float alpha: significance level
     :param str correct: correction type for several tests (None | "Bonferroni" | "Sidak")
-    :param float disc: discounting (or smoothing) parameter for O21 == 0
+    :param float disc: discounting (or smoothing) parameter for O11 == 0 and O21 == 0
     :param bool one_sided: calculate one- or two-sided confidence interval
 
     :return: conservative log-ratio
@@ -270,13 +259,14 @@ def conservative_log_ratio(df, alpha=.01, correct='Bonferroni', disc=.5, one_sid
     """
 
     # questionable discounting according to Hardie (2014)
+    O11_disc = df['O11'].where(df['O11'] != 0, disc)
     O21_disc = df['O21'].where(df['O21'] != 0, disc)
 
     # compute natural logarithm of relative risk
     # so we can use estimate for standard error of log(RR)
     R1 = df['O11'] + df['O12']
     R2 = df['O21'] + df['O22']
-    lrr = np.log((df['O11'] / O21_disc) / (R1 / R2))
+    lrr = np.log((O11_disc / O21_disc) / (R1 / R2))
 
     # Bonferroni or Sidak correction
     if isinstance(correct, str):
@@ -286,7 +276,11 @@ def conservative_log_ratio(df, alpha=.01, correct='Bonferroni', disc=.5, one_sid
         elif correct == "Sidak":
             alpha = 1 - (1 - alpha) ** (1 / vocab)
         else:
-            raise ValueError('correc should be either "Bonferroni" or "Sidak".')
+            raise ValueError('parameter "correct" should either be "Bonferroni" or "Sidak".')
+    elif correct is None:
+        pass
+    else:
+        raise ValueError('parameter "correct" should either be None or a string.')
 
     # get respective quantile of normal distribution
     if not one_sided:
@@ -296,7 +290,7 @@ def conservative_log_ratio(df, alpha=.01, correct='Bonferroni', disc=.5, one_sid
     # asymptotic standard deviation of log(RR) according to Wikipedia
     R1 = df['O11'] + df['O12']
     R2 = df['O21'] + df['O22']
-    lrr_sd = np.sqrt(1/df['O11'] + 1/O21_disc - 1/R1 - 1/R2)
+    lrr_sd = np.sqrt(1/O11_disc + 1/O21_disc - 1/R1 - 1/R2)
 
     # calculate and apply appropriate boundary
     ci_min = (lrr - lrr_sd * z_factor).clip(lower=0)
@@ -313,16 +307,18 @@ def conservative_log_ratio(df, alpha=.01, correct='Bonferroni', disc=.5, one_sid
 # INFORMATION THEORY #
 ######################
 
-def mutual_information(df):
+def mutual_information(df, disc=.001):
     """
     Calculate Mutual Information
 
     :param DataFrame df: pd.DataFrame with columns O11 and E11
+    :param float disc: discounting (or smoothing) parameter for O11 == 0
     :return: mutual information
     :rtype: pd.Series
     """
 
-    am = np.log10(df['O11'] / df['E11'])
+    O11_disc = df['O11'].where(df['O11'] != 0, disc)
+    am = np.log10(O11_disc / df['E11'])
 
     return am
 
@@ -336,6 +332,8 @@ def local_mutual_information(df):
     :rtype: pd.Series
     """
 
-    am = df['O11'] * np.log10(df['O11'] / df['E11'])
+    # NB: discouting will not have any effect since term will be multiplied by original O11 = 0
+    O11_disc = df['O11'].where(df['O11'] != 0, 1)
+    am = df['O11'] * np.log10(O11_disc / df['E11'])
 
     return am
