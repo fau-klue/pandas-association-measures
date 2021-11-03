@@ -5,7 +5,8 @@ http://www.collocations.de/AM/index.html
 """
 
 
-from statistics import NormalDist  # requires python version >= 3.8
+# from statistics import NormalDist  # requires python version >= 3.8
+from scipy.stats import norm       # requires scipy
 import numpy as np
 
 from .binomial import choose
@@ -309,7 +310,8 @@ def conservative_log_ratio(df, alpha=.01, correct='Bonferroni', disc=.5, one_sid
     # get respective quantile of normal distribution
     if not one_sided:
         alpha /= 2
-    z_factor = NormalDist().inv_cdf(1 - alpha)
+    # z_factor = NormalDist().inv_cdf(1 - alpha)
+    z_factor = norm.ppf(1 - alpha)
 
     # asymptotic standard deviation of log(RR) according to Wikipedia
     lrr_sd = np.sqrt(1/O11_disc + 1/O21_disc - 1/R1 - 1/R2)

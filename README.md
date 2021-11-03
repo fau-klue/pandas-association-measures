@@ -9,15 +9,17 @@ http://www.collocations.de/AM/index.html
 
 # Installation
 
-**Prerequisites:** As of version v0.1.6, this module requires python version 3.8 or above.
+**Prerequisites:**
+- [pandas](https://pandas.pydata.org/)
+- [scipy](https://scipy.org/) (as of version v0.1.7)
 
-**Using pip:**
+**Installation using pip:**
 
     pip install association-measures
 
-**From Source:**
+**Installation from source (requires Cython):**
 
-    # Compile Cython code (requires Cython)
+    # Compile Cython code 
     python setup.py build_ext --inplace
 
     # Cython already compiled
@@ -115,15 +117,21 @@ You can thus `join` the results directly to the input.
 
 ## Association Measures
 
-As of version 0.1.6, the following association measures are supported:
+As of version 0.1.7, the following association measures are supported:
 
-- z-score
-- t-score
-- mutual information
-- dice
-- log-likelihood
-- log-ratio
-- conservative log-ratio
+- asymptotic hypothesis tests:
+  - z-score (`z_score`)
+  - t-score (`t_score`)
+  - log-likelihood (`log_likelihood`)
+  - simple-ll
+- point estimates of association strength:
+  - log-ratio (`log_ratio`)
+  - Dice coefficient (`dice`)
+- information theory:
+  - mutual information (`mutual_information`)
+  - local MI (`local_mutual_information`)
+- conservative estimates:
+  - conservative log-ratio (`conservative_log_ratio`)
 
 You can either calculate specific measures:
 
@@ -172,13 +180,3 @@ make test
 # Coverage
 make coverage
 ```
-
-## Publish in PyPI
-
-```bash
-make test && make compile
-
-make build
-
-pipenv run twine upload dist/<PATH-TO-NEW-VERSION>.tar.gz
- ```
