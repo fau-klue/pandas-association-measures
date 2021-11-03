@@ -19,7 +19,7 @@ http://www.collocations.de/AM/index.html
 
 **Installation from source (requires Cython):**
 
-    # Compile Cython code 
+    # Compile Cython code
     python setup.py build_ext --inplace
 
     # Cython already compiled
@@ -54,7 +54,7 @@ id
 5        arrived  2  15334    5  191998
 ```
 
-Combinations of both are possible, but you should make sure to include four independent values for each rows, and that all of the following equations hold:
+Combinations of both are possible, but you should make sure to include four independent values, and that all of the following equations hold:
 
 - f = O11
 - f1 = O11 + O12
@@ -123,7 +123,7 @@ As of version 0.1.7, the following association measures are supported:
   - z-score (`z_score`)
   - t-score (`t_score`)
   - log-likelihood (`log_likelihood`)
-  - simple-ll
+  - simple-ll (`simple_ll`)
 - point estimates of association strength:
   - log-ratio (`log_ratio`)
   - Dice coefficient (`dice`)
@@ -152,12 +152,13 @@ or calculate all available measures:
 ```python3
 >>> df = am.calculate_measures(df)
 >>> df_am.head()
-               z_score   t_score      dice  log_likelihood  mutual_information  log_ratio  conservative_log_ratio
-appreciated   2.102442  0.840269  0.000130        2.448757            0.796611   3.526202                     0.0
-certain      -0.834636 -0.976603  0.000906       -0.829802           -0.136442  -0.486622                     0.0
-measuring     0.451726  0.361077  0.000130        0.191806            0.194551   0.718847                     0.0
-particularly -0.905150 -1.240035  0.000260       -1.059386           -0.273427  -0.965651                     0.0
-arrived       2.533018  1.131847  0.000261        3.879126            0.699701   2.941240                     0.0
+               z_score   t_score  log_likelihood  simple_ll      dice  log_ratio  mutual_information  local_mutual_information  conservative_log_ratio
+item
+appreciated   2.102442  0.840269        2.448757   1.987992  0.000130   3.526202            0.796611                  0.796611                     0.0
+certain      -0.834636 -0.976603       -0.829802  -0.769331  0.000906  -0.486622           -0.136442                 -0.955094                     0.0
+measuring     0.451726  0.361077        0.191806   0.173788  0.000130   0.718847            0.194551                  0.194551                     0.0
+particularly -0.905150 -1.240035       -1.059386  -0.988997  0.000260  -0.965651           -0.273427                 -0.546853                     0.0
+arrived       2.533018  1.131847        3.879126   3.243141  0.000261   2.941240            0.699701                  1.399402                     0.0
 ```
 
 # Development
