@@ -202,7 +202,7 @@ def test_log_likelihood_invalid(invalid_dataframe):
 def test_log_likelihood_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['log_likelihood'], freq=True)
-    assert df_ams['log_likelihood'].iloc[0] == 4087.276827119023
+    assert round(df_ams['log_likelihood'].iloc[0], 5) == 4087.27683
 
 
 #############
