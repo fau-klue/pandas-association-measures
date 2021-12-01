@@ -41,7 +41,7 @@ id
 5        arrived    2  15332    3  176661
 ```
 
-or follow [Evert's (2008: Figure 8)](https://www.stefan-evert.de/PUB/Evert2007HSK_extended_manuscript.pdf) notation of frequency signatures:
+or follow [Evert's (2008: Figure 8)](https://www.stephanie-evert.de/PUB/Evert2007HSK_extended_manuscript.pdf) notation of frequency signatures:
 
 ```python3
 >>> df.head()
