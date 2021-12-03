@@ -145,7 +145,8 @@ def test_t_score_invalid(invalid_dataframe):
 @pytest.mark.zero
 def test_t_score_zero(zero_dataframe):
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['t_score'])
+    df_ams = am.calculate_measures(df, ['t_score'], freq=True, disc=.5)
+    print(df_ams.loc['der'])
     df_ams['t_score'][0] == 15.532438056926377
 
 
@@ -398,3 +399,46 @@ def test_measures_log_ratio_gold(log_ratio_dataframe):
                      ('clr', 'conservative_log_ratio')]:
 
         assert(round(df[r], 3).equals(round(df[assoc], 3)))
+
+
+#################
+# SCORE WRAPPER #
+#################
+@pytest.mark.score
+def test_score_notation(ucs_dataframe):
+
+    # frequency signature notation in dataframe:
+    df1 = am.score(ucs_dataframe)
+
+    # frequency signature notation with int parameters:
+    f1 = int(ucs_dataframe['f1'].iloc[0])
+    N = int(ucs_dataframe['N'].iloc[0])
+    df2 = am.score(ucs_dataframe[['f', 'f2']], f1, N)
+
+    # corpus frequency notation in dataframe:
+    tmp = ucs_dataframe[['f', 'f1']].rename({'f': 'f1', 'f1': 'N1'}, axis=1)
+    tmp['N2'] = ucs_dataframe['N'] - ucs_dataframe['f1']
+    tmp['f2'] = ucs_dataframe['f2'] - ucs_dataframe['f']
+    df3 = am.score(tmp)
+
+    # corpus frequency notation with int parameters:
+    N1 = int(tmp['N1'].iloc[0])
+    N2 = int(tmp['N2'].iloc[0])
+    df4 = am.score(tmp[['f1', 'f2']], N1=N1, N2=N2)
+
+    assert df1.equals(df2)
+    assert df2.equals(df3)
+    assert df3.equals(df4)
+
+
+@pytest.mark.score
+def test_score_invalid(ucs_dataframe):
+
+    with pytest.raises(ValueError):
+        am.score(ucs_dataframe, f1=1, N1=1)
+
+    with pytest.raises(ValueError):
+        am.score(ucs_dataframe, N2=1)
+
+    with pytest.raises(ValueError):
+        am.score(ucs_dataframe, f1=1, N2=1)
