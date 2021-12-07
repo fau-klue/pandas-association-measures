@@ -8,60 +8,56 @@ from pandas import DataFrame
 
 
 def observed_frequencies(df):
-    """
-    Calculate contingency table for observed data.
+    """Return observed frequencies in contingency table notation
+    (O11..O22). Raises a Value Error if columns are not reasonably
+    named.
 
-    naming conventions (cf. Evert 2008: Figure 8)
-    f = O11                     # co-occurrence freq. of token and node
-    f1 = R1 = O11 + O12         # number of tokens in W(node)
-    f2 = C1 = O11 + O21         # marginal freq. of token
-    N = O11 + O12 + O21 + O22   # size of corpus without nodes
+    NB: notation for marginals:
+    - rows: R1 = O11 + O12, R2 = O21 + O22
+    - columns: C1 = O11 + O21, C2 = O12 + O22
+    - size: N = O11 + O12 + O21 + O22 = R1 + R2 = C1 + C2
 
-    :param pandas.DataFrame df: df with O11|f, O12|f1, O21|f2, O22|N
+    Possible input formats:
+    - frequency signature (cf. Evert 2008: Figure 8):
+      f  = O11                    # co-occurrence freq. of token and node
+      f1 =  R1 <int>              # number of tokens in W(node)
+      f2 =  C1                    # marginal freq. of token
+      N  =   N <int>              # size of corpus without nodes
+    - corpus frequencies ("keyword friendly"):
+      f1 = O11                    # number of occurrences in corpus 1
+      f2 = O21                    # number of occurrences in corpus 2
+      N1 =  R1 <int>              # size of corpus 1
+      N2 =  R2 <int>              # size of corpus 2
+
+    :param DataFrame df: DataFrame with reasonably-named frequency columns
     :return: df with same index and columns O11, O12, O21, O22
-    :rtype: pandas.DataFrame
+    :rtype: DataFrame
+
     """
 
-    # check f / O11
-    if 'O11' in df.columns:
-        if 'f' in df.columns:
-            if not df['O11'].equals(df['f']):
-                raise ValueError(
-                    'both "f" and "O11" are given but they are not the same'
-                )
-        O11 = df['O11']
-    elif 'f' in df.columns:
+    # already in contingency notation?
+    try:
+        return df[['O11', 'O12', 'O21', 'O22']].copy()
+    except KeyError:
+        # well, it was worth a try
+        pass
+
+    # frequency signature:
+    if set(['f', 'f1', 'f2', 'N']).issubset(df.columns):
         O11 = df['f']
-    else:
-        raise ValueError(
-            'co-occurrence frequency must be given as column "f" or "O11"'
-        )
-
-    # check f1 / O12
-    if 'O12' in df.columns:
-        O12 = df['O12']
-    elif 'f1' in df.columns:
         O12 = df['f1'] - O11
-    else:
-        raise ValueError('either "O12" or "f1" (= "R1") must be given')
-
-    # check f2 / O21
-    if 'O21' in df.columns:
-        O21 = df['O21']
-    elif 'f2' in df.columns:
         O21 = df['f2'] - O11
-    else:
-        raise ValueError('either "O21" or "f2" (= "C1") must be given')
+        O22 = df['N'] - O11 - O12 - O21
 
-    # check N / O22
-    if 'O22' in df.columns:
-        O22 = df['O22']
-        # N = O11 + O12 + O21 + O22
-    elif 'N' in df.columns:
-        N = df['N']
-        O22 = N - O11 - O12 - O21
+    # corpus frequencies:
+    elif set(['f1', 'N1', 'f2', 'N2']).issubset(df.columns):
+        O11 = df['f1']
+        O12 = df['N1'] - O11
+        O21 = df['f2']
+        O22 = df['N2'] - O21
+
     else:
-        raise ValueError('either "O22" or "N" must be given')
+        raise ValueError('columns are not reasonably named: %s ' % str(df.columns))
 
     return DataFrame(
         index=df.index,
@@ -83,17 +79,19 @@ def expected_frequencies(df):
     :rtype: pandas.DataFrame
     """
 
-    if not df.columns.isin(['O11', 'O12', 'O21', 'O22']).all():
-        obs = observed_frequencies(df)
-    else:
-        obs = df[['O11', 'O12', 'O21', 'O22']]
+    # convert input if necessary
+    obs = observed_frequencies(df)
 
+    # marginal frequencies
     R1 = obs['O11'] + obs['O12']
     R2 = obs['O21'] + obs['O22']
+
     C1 = obs['O11'] + obs['O21']
     C2 = obs['O12'] + obs['O22']
+
     N = R1 + R2
 
+    # expected frequencies
     E11 = (R1 * C1) / N
     E12 = (R1 * C2) / N
     E21 = (R2 * C1) / N

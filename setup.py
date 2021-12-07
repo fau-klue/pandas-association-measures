@@ -10,7 +10,7 @@ from distutils.extension import Extension
 
 # Package meta-data.
 NAME = 'association-measures'
-DESCRIPTION = 'Corpus association measures for Python pandas'
+DESCRIPTION = 'Statistical association measures for Python pandas'
 URL = 'https://github.com/fau-klue/pandas-association-measures'
 EMAIL = 'markus@martialblog.de'
 AUTHOR = 'Markus Opolka'
