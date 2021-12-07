@@ -35,16 +35,16 @@ http://www.collocations.de/AM/index.html
 The module expects a pandas dataframe with reasonably named columns; i.e. the columns must follow one of the following notations:
 
 - contingency table:
-```python3
->>> df
-            item  O11    O12  O21     O22
-id
-1    appreciated    1  15333    1  176663
-2        certain    7  15327  113  176551
-3      measuring    1  15333    7  176657
-4   particularly    2  15332   45  176619
-5        arrived    2  15332    3  176661
-```
+  ```python3
+  >>> df
+              item  O11    O12  O21     O22
+  id
+  1    appreciated    1  15333    1  176663
+  2        certain    7  15327  113  176551
+  3      measuring    1  15333    7  176657
+  4   particularly    2  15332   45  176619
+  5        arrived    2  15332    3  176661
+  ```
 
 - frequency signature (see [Evert 2008: Figure 8](https://www.stephanie-evert.de/PUB/Evert2007HSK_extended_manuscript.pdf)):
   ```python3
@@ -129,23 +129,23 @@ You can thus `join` the results directly to the input.
 The following association measures are currently implemented (v0.2.0):
 
 - asymptotic hypothesis tests:
-  - z-score (`z_score`)
-  - t-score (`t_score`)
+  - **z-score** (`z_score`)
+  - **t-score** (`t_score`)
     - parameter: `disc`
-  - log-likelihood (`log_likelihood`)
+  - **Dunning's log-likelihood** (`log_likelihood`)
     - parameter: `signed`
-  - simple-ll (`simple_ll`)
+  - **simple-ll** (`simple_ll`)
     - parameter: `signed`
 - point estimates of association strength:
-  - log-ratio (`log_ratio`)
+  - [**log ratio**](http://cass.lancs.ac.uk/log-ratio-an-informal-introduction/) (`log_ratio`)
     - parameter: `disc`
-  - Dice coefficient (`dice`)
+  - **Dice coefficient** (`dice`)
 - information theory:
-  - mutual information (`mutual_information`)
+  - **mutual information** (`mutual_information`)
       - parameter: `disc`
-  - local MI (`local_mutual_information`)
+  - **local-MI** (`local_mutual_information`)
 - conservative estimates
-  - conservative log-ratio (`conservative_log_ratio`)
+  - **conservative log-ratio** (`conservative_log_ratio`)
     - parameters: `disc`, `alpha`, `correct`, `one_sided`
 
 You can either calculate specific measures:
