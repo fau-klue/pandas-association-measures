@@ -5,9 +5,10 @@ http://www.collocations.de/AM/index.html
 """
 
 
+import numpy as np
 # from statistics import NormalDist  # requires python version >= 3.8
 from scipy.stats import norm    # requires scipy
-import numpy as np
+from pandas import concat
 
 from .binomial import choose
 from .frequencies import expected_frequencies, observed_frequencies
@@ -31,6 +32,7 @@ def list_measures():
         'log_likelihood': log_likelihood,
         'simple_ll': simple_ll,
         # point estimates of association strength
+        'ms': ms,
         'dice': dice,
         'log_ratio': log_ratio,
         # likelihood measures
@@ -252,6 +254,24 @@ def simple_ll(df, signed=True, **kwargs):
 ###########################################
 # POINT ESTIMATES OF ASSOCIATION STRENGTH #
 ###########################################
+
+def ms(df, **kwargs):
+    """Calculate Minimum Sensitivity.
+
+    :param DataFrame df: pd.DataFrame with columns O11, O12, O21
+    :return: dice
+    :rtype: pd.Series
+    """
+
+    R1 = df['O11'] + df['O12']
+    C1 = df['O11'] + df['O21']
+
+    am1 = df['O11'] / R1
+    am2 = df['O11'] / C1
+    am = concat([am1, am2], axis=1).min(axis=1)
+
+    return am
+
 
 def dice(df, **kwargs):
     """
