@@ -33,7 +33,7 @@ def list_measures():
         'simple_ll': simple_ll,
         # point estimates of association strength
         'liddell': liddell,
-        'ms': ms,
+        'min_sensitivity': min_sensitivity,
         'dice': dice,
         'log_ratio': log_ratio,
         # likelihood measures
@@ -256,7 +256,7 @@ def simple_ll(df, signed=True, **kwargs):
 # POINT ESTIMATES OF ASSOCIATION STRENGTH #
 ###########################################
 
-def ms(df, **kwargs):
+def min_sensitivity(df, **kwargs):
     """Calculate Minimum Sensitivity.
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21

@@ -367,16 +367,16 @@ def test_conservative_log_ratio_one_sided(fixed_dataframe):
     assert((abs(df_ams['conservative_log_ratio']) <= abs(df_ams['clr_one_sided'])).all())
 
 
-######
-# MS #
-######
+###################
+# MIN_SENSITIVITY #
+###################
 
-@pytest.mark.ms
-def test_ms(fixed_dataframe):
+@pytest.mark.min_sensitivity
+def test_min_sensitivity(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['ms'])
-    assert df_ams['ms'][0] == 1
+    df_ams = am.calculate_measures(df, ['min_sensitivity'])
+    assert df_ams['min_sensitivity'][0] == 1
 
 
 ###########
@@ -387,6 +387,14 @@ def test_ms(fixed_dataframe):
 def test_liddell(fixed_dataframe):
 
     df = fixed_dataframe
+    df_ams = am.calculate_measures(df, ['liddell'])
+    assert df_ams['liddell'][0] == 1
+
+
+@pytest.mark.liddell
+def test_liddell_zero(zero_dataframe):
+
+    df = zero_dataframe
     df_ams = am.calculate_measures(df, ['liddell'])
     assert df_ams['liddell'][0] == 1
 
@@ -402,7 +410,7 @@ def test_measures_ucs(ucs_dataframe):
     df = df.join(am.calculate_measures(df))
 
     for ucs, assoc in [('am.Dice', 'dice'),
-                       ('am.MS', 'ms'),
+                       ('am.MS', 'min_sensitivity'),
                        ('am.t.score', 't_score'),
                        ('am.z.score', 'z_score'),
                        ('am.MI', 'mutual_information'),
