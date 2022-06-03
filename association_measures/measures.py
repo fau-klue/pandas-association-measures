@@ -32,6 +32,7 @@ def list_measures():
         'log_likelihood': log_likelihood,
         'simple_ll': simple_ll,
         # point estimates of association strength
+        'liddell': liddell,
         'ms': ms,
         'dice': dice,
         'log_ratio': log_ratio,
@@ -269,6 +270,22 @@ def ms(df, **kwargs):
     am1 = df['O11'] / R1
     am2 = df['O11'] / C1
     am = concat([am1, am2], axis=1).min(axis=1)
+
+    return am
+
+
+def liddell(df, **kwargs):
+    """Calculate Liddell
+
+    :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
+    :return: liddell
+    :rtype: pd.Series
+    """
+
+    C1 = df['O11'] + df['O21']
+    C2 = df['O21'] + df['O22']
+
+    am = (df['O11'] * df['O22'] - df['O21'] * df['O21']) / C1 / C2
 
     return am
 

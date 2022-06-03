@@ -379,6 +379,18 @@ def test_ms(fixed_dataframe):
     assert df_ams['ms'][0] == 1
 
 
+###########
+# LIDDELL #
+###########
+
+@pytest.mark.liddell
+def test_liddell(fixed_dataframe):
+
+    df = fixed_dataframe
+    df_ams = am.calculate_measures(df, ['liddell'])
+    assert df_ams['liddell'][0] == 1
+
+
 ########
 # GOLD #
 ########
