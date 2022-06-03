@@ -146,7 +146,6 @@ def test_t_score_invalid(invalid_dataframe):
 def test_t_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['t_score'], freq=True, disc=.5)
-    print(df_ams.loc['der'])
     df_ams['t_score'][0] == 15.532438056926377
 
 
@@ -368,6 +367,38 @@ def test_conservative_log_ratio_one_sided(fixed_dataframe):
     assert((abs(df_ams['conservative_log_ratio']) <= abs(df_ams['clr_one_sided'])).all())
 
 
+###################
+# MIN_SENSITIVITY #
+###################
+
+@pytest.mark.min_sensitivity
+def test_min_sensitivity(fixed_dataframe):
+
+    df = fixed_dataframe
+    df_ams = am.calculate_measures(df, ['min_sensitivity'])
+    assert df_ams['min_sensitivity'][0] == 1
+
+
+###########
+# LIDDELL #
+###########
+
+@pytest.mark.liddell
+def test_liddell(fixed_dataframe):
+
+    df = fixed_dataframe
+    df_ams = am.calculate_measures(df, ['liddell'])
+    assert df_ams['liddell'][0] == 1
+
+
+@pytest.mark.liddell
+def test_liddell_zero(zero_dataframe):
+
+    df = zero_dataframe
+    df_ams = am.calculate_measures(df, ['liddell'])
+    assert df_ams['liddell'][0] == 1
+
+
 ########
 # GOLD #
 ########
@@ -379,6 +410,7 @@ def test_measures_ucs(ucs_dataframe):
     df = df.join(am.calculate_measures(df))
 
     for ucs, assoc in [('am.Dice', 'dice'),
+                       ('am.MS', 'min_sensitivity'),
                        ('am.t.score', 't_score'),
                        ('am.z.score', 'z_score'),
                        ('am.MI', 'mutual_information'),

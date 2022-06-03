@@ -18,6 +18,7 @@ REQUIRES_PYTHON = '>=3.6'
 VERSION = None
 
 REQUIRED = [
+    'wheel',
     'pandas',
     'scipy'
 ]

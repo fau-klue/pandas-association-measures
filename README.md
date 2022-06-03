@@ -126,24 +126,26 @@ You can thus `join` the results directly to the input.
 
 ## Association Measures
 
-The following association measures are currently implemented (v0.2.0):
+The following association measures are currently implemented (v0.2.1):
 
 - asymptotic hypothesis tests:
   - **z-score** (`z_score`)
   - **t-score** (`t_score`)
     - parameter: `disc`
-  - **Dunning's log-likelihood** (`log_likelihood`)
+  - **Dunning's log-likelihood ratio** (`log_likelihood`)
     - parameter: `signed`
   - **simple-ll** (`simple_ll`)
     - parameter: `signed`
 - point estimates of association strength:
-  - [**log ratio**](http://cass.lancs.ac.uk/log-ratio-an-informal-introduction/) (`log_ratio`)
+  - **Liddell** (`liddell`)
+  - **minimum sensitivity** (`min_sensitivity`)
+  - [**log-ratio**](http://cass.lancs.ac.uk/log-ratio-an-informal-introduction/) (`log_ratio`)
     - parameter: `disc`
   - **Dice coefficient** (`dice`)
 - information theory:
   - **mutual information** (`mutual_information`)
       - parameter: `disc`
-  - **local-MI** (`local_mutual_information`)
+  - **local mutual information** (`local_mutual_information`)
 - conservative estimates
   - **conservative log-ratio** (`conservative_log_ratio`)
     - parameters: `disc`, `alpha`, `correct`, `one_sided`
