@@ -137,6 +137,8 @@ The following association measures are currently implemented (v0.2.0):
   - **simple-ll** (`simple_ll`)
     - parameter: `signed`
 - point estimates of association strength:
+  - **Liddell** (`liddell`)
+  - **minimum sensitivity** (`ms`)
   - [**log ratio**](http://cass.lancs.ac.uk/log-ratio-an-informal-introduction/) (`log_ratio`)
     - parameter: `disc`
   - **Dice coefficient** (`dice`)
