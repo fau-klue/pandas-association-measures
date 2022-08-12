@@ -185,7 +185,7 @@ def test_log_likelihood(fixed_dataframe):
 
     df = fixed_dataframe
     df_ams = am.calculate_measures(df, ['log_likelihood'])
-    assert df_ams['log_likelihood'][0] == 65.01659467828966
+    assert round(df_ams['log_likelihood'][0], 5) == 65.01659
 
 
 @pytest.mark.log_likelihood
@@ -213,7 +213,7 @@ def test_simple_ll(fixed_dataframe):
 
     df = fixed_dataframe
     df_ams = am.calculate_measures(df, ['simple_ll'])
-    assert df_ams['simple_ll'][0] == 28.05170185988092
+    assert round(df_ams['simple_ll'][0], 5) == 28.05170
 
 
 @pytest.mark.simple_ll
@@ -221,7 +221,7 @@ def test_simple_ll(fixed_dataframe):
 def test_simple_ll_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.calculate_measures(df, ['simple_ll'], freq=True)
-    assert df_ams['simple_ll'].iloc[0] == 264.9157890046413
+    assert round(df_ams['simple_ll'].iloc[0], 5) == 264.91579
 
 
 #############################

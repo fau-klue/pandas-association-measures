@@ -405,7 +405,7 @@ def conservative_log_ratio(df, disc=.5, alpha=.01, boundary='normal',
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
     :param float disc: discounting (or smoothing) parameter for O11 == 0 and O21 == 0
     :param float alpha: significance level
-    :param str conf_int: Poisson or Normal approximation?
+    :param str boundary: Poisson or Normal approximation?
     :param str correct: correction type for several tests (None | "Bonferroni" | "Sidak")
     :param bool one_sided: calculate one- or two-sided confidence interval
 
