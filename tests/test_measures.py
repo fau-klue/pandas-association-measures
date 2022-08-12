@@ -140,7 +140,6 @@ def test_t_score_invalid(invalid_dataframe):
         am.calculate_measures(df, ['t_score'])
 
 
-@pytest.mark.now
 @pytest.mark.t_score
 @pytest.mark.zero
 def test_t_score_zero(zero_dataframe):
@@ -259,9 +258,9 @@ def test_hypergeometric_likelihood_zero(zero_dataframe):
     assert isnan(ams[0])
 
 
-#############################
+#######################
 # binomial likelihood #
-#############################
+#######################
 # Not available via calculate_measures due to numerical instability
 
 @pytest.mark.choose
@@ -404,7 +403,7 @@ def test_liddell_zero(zero_dataframe):
 ########
 
 @pytest.mark.gold
-def test_measures_ucs(ucs_dataframe):
+def test_measures_ucs_gold(ucs_dataframe):
 
     df = ucs_dataframe
     df = df.join(am.calculate_measures(df))
@@ -431,6 +430,22 @@ def test_measures_log_ratio_gold(log_ratio_dataframe):
                      ('clr', 'conservative_log_ratio')]:
 
         assert(round(df[r], 3).equals(round(df[assoc], 3)))
+
+
+@pytest.mark.gold
+@pytest.mark.now
+def test_measures_lrc(log_ratio_dataframe):
+
+    # original implementation with normal approximation
+    df = log_ratio_dataframe
+    df = df.join(am.calculate_measures(df, ['conservative_log_ratio'], alpha=.05))
+    assert(round(df['conservative_log_ratio'], 3).equals(round(df['lrc.normal'], 3)))
+
+    # implementation with poisson approximation
+    df = log_ratio_dataframe
+    df = df.join(am.calculate_measures(df, ['conservative_log_ratio'],
+                                       alpha=.05, boundary='poisson'))
+    assert(round(df['conservative_log_ratio'], 3).equals(round(df['lrc'], 3)))
 
 
 #################
