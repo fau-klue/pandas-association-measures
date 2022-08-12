@@ -356,6 +356,15 @@ def test_conservative_log_ratio_zero(zero_dataframe):
 
 
 @pytest.mark.conservative_log_ratio
+def test_conservative_log_ratio_zero_poisson(zero_dataframe):
+
+    df = zero_dataframe
+    df_ams = am.calculate_measures(df, ['log_ratio', 'conservative_log_ratio'], boundary='poisson')
+    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
+    print(df_ams['conservative_log_ratio'].isna().sum())
+
+
+@pytest.mark.conservative_log_ratio
 def test_conservative_log_ratio_one_sided(fixed_dataframe):
 
     df = fixed_dataframe
@@ -364,6 +373,18 @@ def test_conservative_log_ratio_one_sided(fixed_dataframe):
     df_am.name = 'clr_one_sided'
     df_ams = df_ams.join(df_am)
     assert((abs(df_ams['conservative_log_ratio']) <= abs(df_ams['clr_one_sided'])).all())
+
+
+@pytest.mark.conservative_log_ratio
+def test_conservative_log_ratio_boundaries(brown_dataframe):
+
+    df = brown_dataframe
+    df_ams = am.calculate_measures(df, ['conservative_log_ratio'])
+    df_am = am.calculate_measures(df, ['conservative_log_ratio'], boundary="poisson")['conservative_log_ratio']
+    df_am.name = 'clr_poisson'
+    df_ams = df_ams.join(df_am)
+    # print(df_ams[['conservative_log_ratio', 'clr_poisson']])
+    # TODO assert sth
 
 
 ###################
@@ -433,7 +454,6 @@ def test_measures_log_ratio_gold(log_ratio_dataframe):
 
 
 @pytest.mark.gold
-@pytest.mark.now
 def test_measures_lrc(log_ratio_dataframe):
 
     # original implementation with normal approximation
