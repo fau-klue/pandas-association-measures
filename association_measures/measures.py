@@ -29,18 +29,18 @@ def list_measures():
         'log_likelihood': log_likelihood,
         'simple_ll': simple_ll,
         # point estimates of association strength
-        'liddell': liddell,
         'min_sensitivity': min_sensitivity,
+        'liddell': liddell,
         'dice': dice,
         'log_ratio': log_ratio,
         # likelihood measures
         # 'hypergeometric_likelihood': hypergeometric_likelihood,
-        # 'binomial_likelihood': binomial_likelihood,
+        'binomial_likelihood': binomial_likelihood,
+        # conservative estimates
+        'conservative_log_ratio': conservative_log_ratio,
         # information theory
         'mutual_information': mutual_information,
         'local_mutual_information': local_mutual_information,
-        # conservative estimates
-        'conservative_log_ratio': conservative_log_ratio
     }
 
 
@@ -379,20 +379,19 @@ def binomial_likelihood(df, **kwargs):
 # CONSERVATIVE ESTIMATES #
 ##########################
 
-def get_poisson_ci_boundary(alpha, row):
+def get_poisson_ci_boundary(alpha, O11, N1, O21, N2):
 
-    N1 = row['O11'] + row['O12']
-    N2 = row['O21'] + row['O22']
-
-    lower = beta.ppf(alpha, row['O11'], row['O21'] + 1)
-    upper = beta.ppf(1 - alpha, row['O11'] + 1, row['O21'])
-
-    if (row['O11'] / N1) >= (row['O21'] / N2):
+    if (O11 / N1) >= (O21 / N2):
+        lower = beta.ppf(alpha, O11, O21 + 1)
         boundary = max(np.log2((N2 / N1) * lower / (1 - lower)), 0)
     else:
+        upper = beta.ppf(1 - alpha, O11 + 1, O21)
         boundary = min(np.log2((N2 / N1) * upper / (1 - upper)), 0)
 
     return boundary
+
+
+BOUNDARY = np.vectorize(get_poisson_ci_boundary)
 
 
 def conservative_log_ratio(df, disc=.5, alpha=.01, boundary='normal',
@@ -435,7 +434,10 @@ def conservative_log_ratio(df, disc=.5, alpha=.01, boundary='normal',
 
     # Poisson approximation (Evert 2022)
     if boundary == 'poisson':
-        clrr = df.apply(lambda row: get_poisson_ci_boundary(alpha, row), axis=1)
+        tmp = df[['O11', 'O12', 'O21', 'O22']].copy()
+        tmp['N1'] = tmp['O11'] + tmp['O12']
+        tmp['N2'] = tmp['O21'] + tmp['O22']
+        clrr = BOUNDARY(alpha, tmp['O11'], tmp['N1'], tmp['O21'], tmp['N2'])
 
     # Normal approximation (Hardie 2014)
     elif boundary == 'normal':
