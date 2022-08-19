@@ -65,7 +65,7 @@ def test_score(ucs_dataframe):
     f1 = int(ucs_dataframe['f1'].iloc[0])
     N = int(ucs_dataframe['N'].iloc[0])
     print(ucs_dataframe[['f', 'f2']].head())
-    df_sig = am.score(ucs_dataframe[['f', 'f2']], f1, N, measures=['log_likelihood'])
+    df_sig = am.score(ucs_dataframe[['f', 'f2']], f1=f1, N=N, measures=['log_likelihood'])
     print("f1: ", f1)
     print("N: ", N)
     print(df_sig.head())

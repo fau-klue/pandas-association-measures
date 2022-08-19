@@ -92,6 +92,7 @@ def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
 
     df = calculate_measures(df, measures, freq, per_million, digits,
                             disc=disc, signed=signed, alpha=alpha,
+                            boundary=boundary, vocab=vocab,
                             correct=correct, one_sided=one_sided)
 
     return df

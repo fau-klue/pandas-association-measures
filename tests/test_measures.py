@@ -22,7 +22,7 @@ def test_mutual_information_single(fixed_dataframe):
 def test_mutual_information(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['mutual_information'])
+    df_ams = am.score(df, ['mutual_information'])
     assert df_ams['mutual_information'][0] == 1.0
 
 
@@ -32,7 +32,7 @@ def test_mutual_information_invalid(invalid_dataframe):
 
     df = invalid_dataframe
     with pytest.raises(ValueError):
-        am.calculate_measures(df, ['mutual_information'])
+        am.score(df, ['mutual_information'])
 
 
 @pytest.mark.mi
@@ -40,8 +40,8 @@ def test_mutual_information_invalid(invalid_dataframe):
 def test_mutual_information_zero(zero_dataframe):
 
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['mutual_information'])
-    assert df_ams['mutual_information'].iloc[0] == 0.06167489255030763
+    df_ams = am.score(df, ['mutual_information'])
+    assert df_ams['mutual_information'].iloc[0] == 0.061675
 
 
 ############
@@ -60,7 +60,7 @@ def test_local_mi_single(fixed_dataframe):
 def test_local_mi(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['local_mutual_information'])
+    df_ams = am.score(df, ['local_mutual_information'])
     assert df_ams['local_mutual_information'][0] == 10.0
 
 
@@ -70,7 +70,7 @@ def test_local_mi_invalid(invalid_dataframe):
 
     df = invalid_dataframe
     with pytest.raises(ValueError):
-        am.calculate_measures(df, ['local_mutual_information'])
+        am.score(df, ['local_mutual_information'])
 
 
 @pytest.mark.local_mi
@@ -78,8 +78,8 @@ def test_local_mi_invalid(invalid_dataframe):
 def test_local_mi_zero(zero_dataframe):
 
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['local_mutual_information'], freq=True)
-    assert df_ams['local_mutual_information'].iloc[0] == 848.9548959549845
+    df_ams = am.score(df, ['local_mutual_information'], freq=True)
+    assert df_ams['local_mutual_information'].iloc[0] == 848.954896
 
 
 ########
@@ -90,7 +90,7 @@ def test_local_mi_zero(zero_dataframe):
 def test_dice(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['dice'])
+    df_ams = am.score(df, ['dice'])
 
     assert df_ams['dice'][0] == 1.0
 
@@ -101,14 +101,14 @@ def test_dice_invalid(invalid_dataframe):
 
     df = invalid_dataframe
     with pytest.raises(ValueError):
-        am.calculate_measures(df, ['dice'])
+        am.score(df, ['dice'])
 
 
 @pytest.mark.dice
 @pytest.mark.zero
 def test_dice_zero(zero_dataframe):
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['dice'])
+    df_ams = am.score(df, ['dice'])
     df_ams['dice'][0] == 0.16831229174945742
 
 
@@ -128,8 +128,8 @@ def test_t_score_single(fixed_dataframe):
 def test_t_score(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['t_score'])
-    assert df_ams['t_score'][0] == 2.846049894151541
+    df_ams = am.score(df, ['t_score'])
+    assert df_ams['t_score'][0] == 2.84605
 
 
 @pytest.mark.t_score
@@ -137,14 +137,14 @@ def test_t_score(fixed_dataframe):
 def test_t_score_invalid(invalid_dataframe):
     df = invalid_dataframe
     with pytest.raises(ValueError):
-        am.calculate_measures(df, ['t_score'])
+        am.score(df, ['t_score'])
 
 
 @pytest.mark.t_score
 @pytest.mark.zero
 def test_t_score_zero(zero_dataframe):
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['t_score'], freq=True, disc=.5)
+    df_ams = am.score(df, ['t_score'], disc=.5)
     df_ams['t_score'][0] == 15.532438056926377
 
 
@@ -156,7 +156,7 @@ def test_t_score_zero(zero_dataframe):
 def test_z_score(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['z_score'])
+    df_ams = am.score(df, ['z_score'])
     assert df_ams['z_score'][0] == 9.0
 
 
@@ -165,14 +165,14 @@ def test_z_score(fixed_dataframe):
 def test_z_score_nan(invalid_dataframe):
     df = invalid_dataframe
     with pytest.raises(ValueError):
-        am.calculate_measures(df, ['z_score'])
+        am.score(df, ['z_score'])
 
 
 @pytest.mark.z_score
 @pytest.mark.zero
 def test_z_score_zero(zero_dataframe):
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['z_score'])
+    df_ams = am.score(df, ['z_score'])
     df_ams['z_score'].iloc[0] == 16.675431342469118
 
 
@@ -184,8 +184,8 @@ def test_z_score_zero(zero_dataframe):
 def test_log_likelihood(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['log_likelihood'])
-    assert round(df_ams['log_likelihood'][0], 5) == 65.01659
+    df_ams = am.score(df, ['log_likelihood'])
+    assert df_ams['log_likelihood'][0] == 65.016595
 
 
 @pytest.mark.log_likelihood
@@ -193,15 +193,15 @@ def test_log_likelihood(fixed_dataframe):
 def test_log_likelihood_invalid(invalid_dataframe):
     df = invalid_dataframe
     with pytest.raises(ValueError):
-        am.calculate_measures(df, ['log_likelihood'])
+        am.score(df, ['log_likelihood'])
 
 
 @pytest.mark.log_likelihood
 @pytest.mark.zero
 def test_log_likelihood_zero(zero_dataframe):
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['log_likelihood'], freq=True)
-    assert round(df_ams['log_likelihood'].iloc[0], 5) == 4087.27683
+    df_ams = am.score(df, ['log_likelihood'], freq=True)
+    assert df_ams['log_likelihood'].iloc[0] == 4087.276827
 
 
 #############
@@ -212,22 +212,22 @@ def test_log_likelihood_zero(zero_dataframe):
 def test_simple_ll(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['simple_ll'])
-    assert round(df_ams['simple_ll'][0], 5) == 28.05170
+    df_ams = am.score(df, ['simple_ll'])
+    assert df_ams['simple_ll'][0] == 28.051702
 
 
 @pytest.mark.simple_ll
 @pytest.mark.zero
 def test_simple_ll_zero(zero_dataframe):
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['simple_ll'], freq=True)
-    assert round(df_ams['simple_ll'].iloc[0], 5) == 264.91579
+    df_ams = am.score(df, ['simple_ll'], freq=True)
+    assert df_ams['simple_ll'].iloc[0] == 264.915789
 
 
 #############################
 # hypergeometric likelihood #
 #############################
-# Not available via calculate_measures due to numerical instability
+# Not available via score due to numerical instability
 
 @pytest.mark.choose
 @pytest.mark.hypergeometric_likelihood
@@ -261,7 +261,7 @@ def test_hypergeometric_likelihood_zero(zero_dataframe):
 #######################
 # binomial likelihood #
 #######################
-# Not available via calculate_measures due to numerical instability
+# Not available via score due to numerical instability
 
 @pytest.mark.choose
 @pytest.mark.binomial_likelihood
@@ -312,8 +312,8 @@ def test_binomial_likelihood_zero(zero_dataframe):
 def test_log_ratio(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['log_ratio'])
-    assert df_ams['log_ratio'][0] == 7.491853096329675
+    df_ams = am.score(df, ['log_ratio'], disc=.5)
+    assert df_ams['log_ratio'][0] == 7.491853
 
 
 @pytest.mark.log_ratio
@@ -322,7 +322,7 @@ def test_log_ratio_invalid(invalid_dataframe):
 
     df = invalid_dataframe
     with pytest.raises(ValueError):
-        am.calculate_measures(df, ['log_ratio'])
+        am.score(df, ['log_ratio'])
 
 
 @pytest.mark.log_ratio
@@ -330,8 +330,8 @@ def test_log_ratio_invalid(invalid_dataframe):
 def test_log_ratio_zero(zero_dataframe):
 
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['log_ratio'])
-    assert df_ams['log_ratio'][0] == 12.036450448790957
+    df_ams = am.score(df, ['log_ratio'], disc=.5)
+    assert df_ams['log_ratio'][0] == 12.03645
 
 
 ##########################
@@ -342,16 +342,16 @@ def test_log_ratio_zero(zero_dataframe):
 def test_conservative_log_ratio(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['log_ratio', 'conservative_log_ratio'])
-    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
-    assert(df_ams['conservative_log_ratio'].iloc[0] == 0.7969356993077386)
+    df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], disc=.5, alpha=.01)
+    assert (abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all()
+    assert df_ams['conservative_log_ratio'].iloc[0] == 0.796936
 
 
 @pytest.mark.conservative_log_ratio
 def test_conservative_log_ratio_zero(zero_dataframe):
 
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['log_ratio', 'conservative_log_ratio'])
+    df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'])
     assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
 
 
@@ -359,16 +359,15 @@ def test_conservative_log_ratio_zero(zero_dataframe):
 def test_conservative_log_ratio_zero_poisson(zero_dataframe):
 
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['log_ratio', 'conservative_log_ratio'], boundary='poisson')
+    df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], boundary='poisson')
     assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
-    print(df_ams['conservative_log_ratio'].isna().sum())
 
 
 @pytest.mark.conservative_log_ratio
 def test_conservative_log_ratio_one_sided(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['conservative_log_ratio'])
+    df_ams = am.score(df, ['conservative_log_ratio'])
     df_am = am.conservative_log_ratio(df, one_sided=True)
     df_am.name = 'clr_one_sided'
     df_ams = df_ams.join(df_am)
@@ -379,12 +378,11 @@ def test_conservative_log_ratio_one_sided(fixed_dataframe):
 def test_conservative_log_ratio_boundaries(brown_dataframe):
 
     df = brown_dataframe
-    df_ams = am.calculate_measures(df, ['conservative_log_ratio'])
-    df_am = am.calculate_measures(df, ['conservative_log_ratio'], boundary="poisson")['conservative_log_ratio']
+    df_ams = am.score(df, ['conservative_log_ratio'])
+    df_am = am.score(df, ['conservative_log_ratio'], boundary="poisson")['conservative_log_ratio']
     df_am.name = 'clr_poisson'
     df_ams = df_ams.join(df_am)
-    # print(df_ams[['conservative_log_ratio', 'clr_poisson']])
-    # TODO assert sth
+    assert (df_ams['conservative_log_ratio'] == 0).sum() < (df_ams['clr_poisson'] == 0).sum()
 
 
 ###################
@@ -395,7 +393,7 @@ def test_conservative_log_ratio_boundaries(brown_dataframe):
 def test_min_sensitivity(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['min_sensitivity'])
+    df_ams = am.score(df, ['min_sensitivity'])
     assert df_ams['min_sensitivity'][0] == 1
 
 
@@ -407,7 +405,7 @@ def test_min_sensitivity(fixed_dataframe):
 def test_liddell(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.calculate_measures(df, ['liddell'])
+    df_ams = am.score(df, ['liddell'])
     assert df_ams['liddell'][0] == 1
 
 
@@ -415,7 +413,7 @@ def test_liddell(fixed_dataframe):
 def test_liddell_zero(zero_dataframe):
 
     df = zero_dataframe
-    df_ams = am.calculate_measures(df, ['liddell'])
+    df_ams = am.score(df, ['liddell'])
     assert df_ams['liddell'][0] == 1
 
 
@@ -427,7 +425,7 @@ def test_liddell_zero(zero_dataframe):
 def test_measures_ucs_gold(ucs_dataframe):
 
     df = ucs_dataframe
-    df = df.join(am.calculate_measures(df))
+    df = df.join(am.score(df))
 
     for ucs, assoc in [('am.Dice', 'dice'),
                        ('am.MS', 'min_sensitivity'),
@@ -438,19 +436,19 @@ def test_measures_ucs_gold(ucs_dataframe):
                        ('am.local.MI', 'local_mutual_information'),
                        ('am.simple.ll', 'simple_ll')]:
 
-        assert(round(df[ucs], 10).equals(round(df[assoc], 10)))
+        assert round(df[ucs], 6).equals(df[assoc])
 
 
 @pytest.mark.gold
 def test_measures_log_ratio_gold(log_ratio_dataframe):
 
     df = log_ratio_dataframe
-    df = df.join(am.calculate_measures(df, ['log_ratio', 'conservative_log_ratio']))
+    df = df.join(am.score(df, ['log_ratio', 'conservative_log_ratio'], disc=.5, alpha=.01))
 
     for r, assoc in [('lr', 'log_ratio'),
                      ('clr', 'conservative_log_ratio')]:
 
-        assert(round(df[r], 3).equals(round(df[assoc], 3)))
+        assert round(df[r], 6).equals(df[assoc])
 
 
 @pytest.mark.gold
@@ -458,14 +456,14 @@ def test_measures_lrc(log_ratio_dataframe):
 
     # original implementation with normal approximation
     df = log_ratio_dataframe
-    df = df.join(am.calculate_measures(df, ['conservative_log_ratio'], alpha=.05))
-    assert(round(df['conservative_log_ratio'], 3).equals(round(df['lrc.normal'], 3)))
+    df = df.join(am.score(df, ['conservative_log_ratio'], alpha=.05))
+    assert df['conservative_log_ratio'].equals(round(df['lrc.normal'], 6))
 
     # implementation with poisson approximation
     df = log_ratio_dataframe
-    df = df.join(am.calculate_measures(df, ['conservative_log_ratio'],
-                                       alpha=.05, boundary='poisson'))
-    assert(round(df['conservative_log_ratio'], 3).equals(round(df['lrc'], 3)))
+    df = df.join(am.score(df, ['conservative_log_ratio'],
+                          alpha=.05, boundary='poisson'))
+    assert df['conservative_log_ratio'].equals(round(df['lrc'], 6))
 
 
 #################
@@ -480,7 +478,7 @@ def test_score_notation(ucs_dataframe):
     # frequency signature notation with int parameters:
     f1 = int(ucs_dataframe['f1'].iloc[0])
     N = int(ucs_dataframe['N'].iloc[0])
-    df2 = am.score(ucs_dataframe[['f', 'f2']], f1, N)
+    df2 = am.score(ucs_dataframe[['f', 'f2']], f1=f1, N=N)
 
     # corpus frequency notation in dataframe:
     tmp = ucs_dataframe[['f', 'f1']].rename({'f': 'f1', 'f1': 'N1'}, axis=1)
