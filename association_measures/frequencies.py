@@ -1,7 +1,6 @@
 """
 observed (O11, O12, O21, O22) and expected (E11, E12, E21, E22) frequencies
 
-http://www.collocations.de/AM/index.html
 """
 
 from pandas import DataFrame
@@ -57,7 +56,7 @@ def observed_frequencies(df):
         O22 = df['N2'] - O21
 
     else:
-        raise ValueError('columns are not reasonably named: %s ' % str(df.columns))
+        raise ValueError(f'columns are not reasonably named: {str(df.columns)}')
 
     return DataFrame(
         index=df.index,

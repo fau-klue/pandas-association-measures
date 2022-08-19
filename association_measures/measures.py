@@ -383,6 +383,16 @@ def binomial_likelihood(df, **kwargs):
 ##########################
 
 def get_poisson_ci_boundary(alpha, O11, N1, O21, N2):
+    """
+    Get the lower (if O11 / N1 >= O21 / N2) or upper (else) bound of
+    the CI of a Poisson distribution
+
+    :param float alpha: sig. level
+    :param int O11:
+    :param int N1:
+    :param int O21:
+    :param int N2:
+    """
 
     if (O11 / N1) >= (O21 / N2):
         lower = beta.ppf(alpha, O11, O21 + 1)
