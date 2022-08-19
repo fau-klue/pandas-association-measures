@@ -46,8 +46,8 @@ def list_measures():
 
 def score(df, f1=None, N=None, N1=None, N2=None,
           measures=None, freq=True, per_million=True, digits=6,
-          disc=.5, signed=True, alpha=.01, correct='Bonferroni',
-          one_sided=False):
+          disc=.001, signed=True, alpha=.001, correct='Bonferroni',
+          boundary='normal', vocab=None, one_sided=False):
 
     """Wrapper for `calculate_measures` that also allows integer counts to
     be given as parameters. This is reasonable for the following notations:
@@ -117,7 +117,9 @@ def calculate_measures(df, measures=None, freq=False,
     :param float disc: discounting (or smoothing) parameter for O11 == 0 (and O21 == 0)
     :param bool signed: enforce negative values for rows with O11 < E11?
     :param float alpha: CLR: significance level
+    :param str boundary: exact CI boundary of [poisson] distribution or [normal] approximation?
     :param str correct: CLR: correction type repeated tests (None|"Bonferroni"|"Sidak")
+    :param int vocab: CLR: size of vocabulary (number of comparisons for correcting alpha)
     :param bool one_sided: CLR: calculate one- or two-sided confidence interval
 
     :return: association measures
@@ -394,8 +396,9 @@ def get_poisson_ci_boundary(alpha, O11, N1, O21, N2):
 BOUNDARY = np.vectorize(get_poisson_ci_boundary)
 
 
-def conservative_log_ratio(df, disc=.5, alpha=.01, boundary='normal',
-                           correct='Bonferroni', one_sided=False, **kwargs):
+def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
+                           correct='Bonferroni', vocab=None,
+                           one_sided=False, **kwargs):
     """
     Calculate conservative log-ratio, i.e. the binary logarithm of the
     lower bound of the confidence interval of relative risk at the
@@ -404,8 +407,9 @@ def conservative_log_ratio(df, disc=.5, alpha=.01, boundary='normal',
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
     :param float disc: discounting (or smoothing) parameter for O11 == 0 and O21 == 0
     :param float alpha: significance level
-    :param str boundary: Poisson or Normal approximation?
+    :param str boundary: exact CI boundary of [poisson] distribution or [normal] approximation?
     :param str correct: correction type for several tests (None | "Bonferroni" | "Sidak")
+    :param int vocab: size of vocabulary (number of comparisons for correcting alpha)
     :param bool one_sided: calculate one- or two-sided confidence interval
 
     :return: conservative log-ratio
@@ -420,11 +424,13 @@ def conservative_log_ratio(df, disc=.5, alpha=.01, boundary='normal',
     # Bonferroni or Sidak correction
     if correct is not None:
         if isinstance(correct, str):
-            vocab = (df['O11'] >= 1).sum()
+            vocab = (df['O11'] >= 1).sum() if vocab is None else vocab
             if correct == 'Bonferroni':
                 alpha /= vocab
-            elif correct == "Sidak":  # TODO: improve computation
+            elif correct == "Sidak":
                 alpha = 1 - (1 - alpha) ** (1 / vocab)
+                # more stable alternative: alpha = 1 - exp(log(1 - alpha) / vocab)
+                # doesn't make any difference in practice though, e.g. alpha = .00001, vocab = 10**10
             else:
                 raise ValueError('parameter "correct" should either be "Bonferroni" or "Sidak".')
         else:
