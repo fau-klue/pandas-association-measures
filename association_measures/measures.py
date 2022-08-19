@@ -44,9 +44,9 @@ def list_measures():
     }
 
 
-def score(df, f1=None, N=None, N1=None, N2=None,
-          measures=None, freq=True, per_million=True, digits=6,
-          disc=.001, signed=True, alpha=.001, correct='Bonferroni',
+def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
+          freq=True, per_million=True, digits=6, disc=.001,
+          signed=True, alpha=.001, correct='Bonferroni',
           boundary='normal', vocab=None, one_sided=False):
 
     """Wrapper for `calculate_measures` that also allows integer counts to

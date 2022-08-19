@@ -12,13 +12,11 @@ from distutils.extension import Extension
 NAME = 'association-measures'
 DESCRIPTION = 'Statistical association measures for Python pandas'
 URL = 'https://github.com/fau-klue/pandas-association-measures'
-EMAIL = 'markus@martialblog.de'
-AUTHOR = 'Markus Opolka'
-REQUIRES_PYTHON = '>=3.6'
-VERSION = None
+EMAIL = 'philipp.heinrich@fau.de'
+AUTHOR = 'Philipp Heinrich'
 
+REQUIRES_PYTHON = '>=3.6'
 REQUIRED = [
-    'wheel',
     'pandas',
     'scipy'
 ]
@@ -37,12 +35,7 @@ except ImportError:
     extensions = [Extension('association_measures.binomial', ['association_measures/binomial.c'])]
 
 
-LONG_DESCRIPTION = """
-Statistical association measures for Python pandas.
-
-Association measures are mathematical formulae that interpret cooccurrence frequency data. For each pair of words extracted from a corpus, they compute an association score, a single real value that indicates the amount of (statistical) association between the two words.
-"""
-
+# read long description from README
 try:
     with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
         long_description = '\n' + f.read()
@@ -50,13 +43,9 @@ except FileNotFoundError:
     long_description = DESCRIPTION
 
 # Load the package's version.py module as a dictionary.
-about = {}
-if not VERSION:
-    project_slug = NAME.lower().replace("-", "_").replace(" ", "_")
-    with open(os.path.join(here, project_slug, 'version.py')) as f:
-        exec(f.read(), about)
-else:
-    about['__version__'] = VERSION
+version = {}
+with open(os.path.join(here, 'association_measures', 'version.py')) as f:
+    exec(f.read(), version)
 
 
 class UploadCommand(Command):
@@ -90,7 +79,7 @@ class UploadCommand(Command):
         os.system('twine upload dist/*')
 
         self.status('Pushing git tags…')
-        os.system('git tag v{0}'.format(about['__version__']))
+        os.system('git tag v{0}'.format(version['__version__']))
         os.system('git push --tags')
 
         sys.exit()
@@ -98,9 +87,9 @@ class UploadCommand(Command):
 
 setup(
     name=NAME,
-    version=about['__version__'],
+    version=version['__version__'],
     description=DESCRIPTION,
-    long_description=LONG_DESCRIPTION,
+    long_description=long_description,
     author=AUTHOR,
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
