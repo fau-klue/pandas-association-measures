@@ -13,10 +13,11 @@ NAME = 'association-measures'
 DESCRIPTION = 'Statistical association measures for Python pandas'
 URL = 'https://github.com/fau-klue/pandas-association-measures'
 EMAIL = 'philipp.heinrich@fau.de'
-AUTHOR = 'Philipp Heinrich'
+AUTHOR = 'Philipp Heinrich & Markus Opolka'
 
 REQUIRES_PYTHON = '>=3.6'
 REQUIRED = [
+    'wheel',
     'pandas',
     'scipy'
 ]
