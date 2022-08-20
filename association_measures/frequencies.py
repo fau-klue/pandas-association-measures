@@ -1,7 +1,6 @@
 """
 observed (O11, O12, O21, O22) and expected (E11, E12, E21, E22) frequencies
 
-http://www.collocations.de/AM/index.html
 """
 
 from pandas import DataFrame
@@ -19,10 +18,10 @@ def observed_frequencies(df):
 
     Possible input formats:
     - frequency signature (cf. Evert 2008: Figure 8):
-      f  = O11                    # co-occurrence freq. of token and node
-      f1 =  R1 <int>              # number of tokens in W(node)
-      f2 =  C1                    # marginal freq. of token
-      N  =   N <int>              # size of corpus without nodes
+      f  = O11                    # co-occurrence freq. of token and node / freq. in corpus 1
+      f1 =  R1 <int>              # number of tokens in W(node) / size of corpus 1
+      f2 =  C1                    # marginal freq. of token / freq. in corpus 1 + 2
+      N  =   N <int>              # size of corpus without nodes / size of corpus 1 + 2
     - corpus frequencies ("keyword friendly"):
       f1 = O11                    # number of occurrences in corpus 1
       f2 = O21                    # number of occurrences in corpus 2
@@ -57,7 +56,7 @@ def observed_frequencies(df):
         O22 = df['N2'] - O21
 
     else:
-        raise ValueError('columns are not reasonably named: %s ' % str(df.columns))
+        raise ValueError(f'columns are not reasonably named: {str(df.columns)}')
 
     return DataFrame(
         index=df.index,

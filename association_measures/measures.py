@@ -1,14 +1,11 @@
 """
-Association measures are mathematical formulae that interpret cooccurrence frequency data.
+association measures
 
-http://www.collocations.de/AM/index.html
 """
 
-
 import numpy as np
-# from statistics import NormalDist  # requires python version >= 3.8
-from scipy.stats import norm    # requires scipy
 from pandas import concat
+from scipy.stats import norm, beta
 
 from .binomial import choose
 from .frequencies import expected_frequencies, observed_frequencies
@@ -32,25 +29,25 @@ def list_measures():
         'log_likelihood': log_likelihood,
         'simple_ll': simple_ll,
         # point estimates of association strength
-        'liddell': liddell,
         'min_sensitivity': min_sensitivity,
+        'liddell': liddell,
         'dice': dice,
         'log_ratio': log_ratio,
         # likelihood measures
         # 'hypergeometric_likelihood': hypergeometric_likelihood,
-        # 'binomial_likelihood': binomial_likelihood,
+        'binomial_likelihood': binomial_likelihood,
+        # conservative estimates
+        'conservative_log_ratio': conservative_log_ratio,
         # information theory
         'mutual_information': mutual_information,
         'local_mutual_information': local_mutual_information,
-        # conservative estimates
-        'conservative_log_ratio': conservative_log_ratio
     }
 
 
-def score(df, f1=None, N=None, N1=None, N2=None,
-          measures=None, freq=True, per_million=True, digits=6,
-          disc=.5, signed=True, alpha=.01, correct='Bonferroni',
-          one_sided=False):
+def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
+          freq=True, per_million=True, digits=6, disc=.001,
+          signed=True, alpha=.001, correct='Bonferroni',
+          boundary='normal', vocab=None, one_sided=False):
 
     """Wrapper for `calculate_measures` that also allows integer counts to
     be given as parameters. This is reasonable for the following notations:
@@ -95,6 +92,7 @@ def score(df, f1=None, N=None, N1=None, N2=None,
 
     df = calculate_measures(df, measures, freq, per_million, digits,
                             disc=disc, signed=signed, alpha=alpha,
+                            boundary=boundary, vocab=vocab,
                             correct=correct, one_sided=one_sided)
 
     return df
@@ -120,7 +118,9 @@ def calculate_measures(df, measures=None, freq=False,
     :param float disc: discounting (or smoothing) parameter for O11 == 0 (and O21 == 0)
     :param bool signed: enforce negative values for rows with O11 < E11?
     :param float alpha: CLR: significance level
+    :param str boundary: exact CI boundary of [poisson] distribution or [normal] approximation?
     :param str correct: CLR: correction type repeated tests (None|"Bonferroni"|"Sidak")
+    :param int vocab: CLR: size of vocabulary (number of comparisons for correcting alpha)
     :param bool one_sided: CLR: calculate one- or two-sided confidence interval
 
     :return: association measures
@@ -382,8 +382,34 @@ def binomial_likelihood(df, **kwargs):
 # CONSERVATIVE ESTIMATES #
 ##########################
 
-def conservative_log_ratio(df, disc=.5, alpha=.01,
-                           correct='Bonferroni', one_sided=False, **kwargs):
+def get_poisson_ci_boundary(alpha, O11, N1, O21, N2):
+    """
+    Get the lower (if O11 / N1 >= O21 / N2) or upper (else) bound of
+    the CI of a Poisson distribution
+
+    :param float alpha: sig. level
+    :param int O11:
+    :param int N1:
+    :param int O21:
+    :param int N2:
+    """
+
+    if (O11 / N1) >= (O21 / N2):
+        lower = beta.ppf(alpha, O11, O21 + 1)
+        boundary = max(np.log2((N2 / N1) * lower / (1 - lower)), 0)
+    else:
+        upper = beta.ppf(1 - alpha, O11 + 1, O21)
+        boundary = min(np.log2((N2 / N1) * upper / (1 - upper)), 0)
+
+    return boundary
+
+
+BOUNDARY = np.vectorize(get_poisson_ci_boundary)
+
+
+def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
+                           correct='Bonferroni', vocab=None,
+                           one_sided=False, **kwargs):
     """
     Calculate conservative log-ratio, i.e. the binary logarithm of the
     lower bound of the confidence interval of relative risk at the
@@ -392,7 +418,9 @@ def conservative_log_ratio(df, disc=.5, alpha=.01,
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
     :param float disc: discounting (or smoothing) parameter for O11 == 0 and O21 == 0
     :param float alpha: significance level
+    :param str boundary: exact CI boundary of [poisson] distribution or [normal] approximation?
     :param str correct: correction type for several tests (None | "Bonferroni" | "Sidak")
+    :param int vocab: size of vocabulary (number of comparisons for correcting alpha)
     :param bool one_sided: calculate one- or two-sided confidence interval
 
     :return: conservative log-ratio
@@ -400,46 +428,51 @@ def conservative_log_ratio(df, disc=.5, alpha=.01,
 
     """
 
-    # questionable discounting according to Hardie (2014)
-    O11_disc = df['O11'].where(df['O11'] != 0, disc)
-    O21_disc = df['O21'].where(df['O21'] != 0, disc)
-
-    # compute natural logarithm of relative risk
-    # so we can use estimate for standard error of log(RR)
-    R1 = df['O11'] + df['O12']
-    R2 = df['O21'] + df['O22']
-    lrr = np.log((O11_disc / O21_disc) / (R1 / R2))
-
-    # Bonferroni or Sidak correction
-    if isinstance(correct, str):
-        vocab = (df['O11'] >= 1).sum()
-        if correct == 'Bonferroni':
-            alpha /= vocab
-        elif correct == "Sidak":  # TODO: improve computation
-            alpha = 1 - (1 - alpha) ** (1 / vocab)
-        else:
-            raise ValueError('parameter "correct" should either be "Bonferroni" or "Sidak".')
-    elif correct is None:
-        pass
-    else:
-        raise ValueError('parameter "correct" should either be None or a string.')
-
-    # get respective quantile of normal distribution
+    # correction of alpha for two-sided tests
     if not one_sided:
         alpha /= 2
-    # z_factor = NormalDist().inv_cdf(1 - alpha)
-    z_factor = norm.ppf(1 - alpha)
 
-    # asymptotic standard deviation of log(RR) according to Wikipedia
-    lrr_sd = np.sqrt(1/O11_disc + 1/O21_disc - 1/R1 - 1/R2)
+    # Bonferroni or Sidak correction
+    if correct is not None:
+        if isinstance(correct, str):
+            vocab = (df['O11'] >= 1).sum() if vocab is None else vocab
+            if correct == 'Bonferroni':
+                alpha /= vocab
+            elif correct == "Sidak":
+                alpha = 1 - (1 - alpha) ** (1 / vocab)
+                # more stable alternative: alpha = 1 - exp(log(1 - alpha) / vocab)
+                # doesn't make any difference in practice though, e.g. alpha = .00001, vocab = 10**10
+            else:
+                raise ValueError('parameter "correct" should either be "Bonferroni" or "Sidak".')
+        else:
+            raise ValueError('parameter "correct" should either be None or a string.')
 
-    # calculate and apply appropriate boundary
-    ci_min = (lrr - lrr_sd * z_factor).clip(lower=0)
-    ci_max = (lrr + lrr_sd * z_factor).clip(upper=0)
-    clrr = ci_min.where(lrr >= 0, ci_max)
+    # CONFIDENCE INTERVAL
 
-    # adjust to binary logarithm
-    clrr /= np.log(2)
+    # Poisson approximation (Evert 2022)
+    if boundary == 'poisson':
+        tmp = df[['O11', 'O12', 'O21', 'O22']].copy()
+        tmp['N1'] = tmp['O11'] + tmp['O12']
+        tmp['N2'] = tmp['O21'] + tmp['O22']
+        clrr = BOUNDARY(alpha, tmp['O11'], tmp['N1'], tmp['O21'], tmp['N2'])
+
+    # Normal approximation (Hardie 2014)
+    elif boundary == 'normal':
+        R1 = df['O11'] + df['O12']
+        R2 = df['O21'] + df['O22']
+        # - questionable discounting according to Hardie (2014)
+        O11_disc = df['O11'].where(df['O11'] != 0, disc)
+        O21_disc = df['O21'].where(df['O21'] != 0, disc)
+        # - compute natural logarithm of relative risk so we can use estimate for standard error of log(RR)
+        lrr = np.log((O11_disc / O21_disc) / (R1 / R2))
+        # - asymptotic standard deviation of log(RR) according to Wikipedia
+        lrr_sd = np.sqrt(1/O11_disc + 1/O21_disc - 1/R1 - 1/R2)
+        # - calculate and apply appropriate boundary
+        z_factor = norm.ppf(1 - alpha)
+        ci_min = (lrr - lrr_sd * z_factor).clip(lower=0)
+        ci_max = (lrr + lrr_sd * z_factor).clip(upper=0)
+        clrr = ci_min.where(lrr >= 0, ci_max)
+        clrr /= np.log(2)           # adjust to binary logarithm
 
     return clrr
 

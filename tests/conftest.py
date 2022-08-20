@@ -47,7 +47,7 @@ def random_dataframe():
 def zero_dataframe():
     """ Sample DataFrame with lots of zeros """
 
-    df = pd.read_csv("tests/df-zeros.tsv", index_col=0,
+    df = pd.read_csv("tests/data/df-zeros.tsv", index_col=0,
                      sep="\t", quoting=3, keep_default_na=False)
 
     return df
@@ -84,7 +84,7 @@ def ucs_dataframe():
     # 'am.z.score.corr'
 
     """
-    df = pd.read_csv("tests/ucs-gold-100.ds", comment='#', index_col=0,
+    df = pd.read_csv("tests/data/ucs-gold-100.ds", comment='#', index_col=0,
                      sep="\t", quoting=3, keep_default_na=False)
 
     return df
@@ -100,7 +100,7 @@ def log_ratio_dataframe():
     # 'clr'
 
     """
-    df = pd.read_csv("tests/log-ratio-gold.tsv", index_col=0, sep="\t")
+    df = pd.read_csv("tests/data/log-ratio-gold.tsv", index_col=0, sep="\t")
 
     return df
 
@@ -110,6 +110,6 @@ def brown_dataframe():
     """ Sample DataFrame with real data counts from Brown Corpus.
 
     """
-    df = pd.read_csv("tests/brown.csv", index_col=0)
+    df = pd.read_csv("tests/data/brown.csv", index_col=0)
 
     return df

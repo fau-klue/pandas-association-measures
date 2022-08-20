@@ -1,6 +1,6 @@
 # preprocess cqpweb data
 # convert to dataframe with columns
-# lemma, f, f1, f2, N, lr, clr, clr2
+# lemma, f, f1, f2, N, lr, clr, lrc, lrc.normal, lrc.positive
 
 # NB: keyword measures implemented below have different notation:
 # f1 ~ O11 = f
@@ -68,7 +68,7 @@ LogRatio <- function (f1, f2, N1, N2, length.f1=NULL, conf.level=NULL, correct=T
       z.factor <- -qnorm(alpha / 2) # number of s.d. for asymptotic two-sided conf.int
       lrr <- log((f1 / N1) / (f2.disc / N2))
       lrr.sd <- sqrt(1/f1 + 1/f2.disc - 1/N1 - 1/N2) # asymptotic s.d. of log(RR) according to Wikipedia
-      print(head(cbind(lrr / log(2), lrr.sd, z.factor)))
+      # print(head(cbind(lrr / log(2), lrr.sd, z.factor)))
       lrr <- ifelse(lrr >= 0, 
                     pmax(lrr - z.factor * lrr.sd, 0), # log(RR) >= 0 -> lower bound of conf.int (clamped to >= 0)
                     pmin(lrr + z.factor * lrr.sd, 0)) # log(RR) < 0  -> upper bound of conf.int (clamped to <= 0)
@@ -85,6 +85,81 @@ LogRatio <- function (f1, f2, N1, N2, length.f1=NULL, conf.level=NULL, correct=T
   lrr / log(2) # adjust to log2 units
 }
 ################################################################################
+# Evert 2022: Keyness @ DH
+binom.confint <- function(k, n, conf.level=0.95, correct=FALSE,
+                          alternative=c("two.sided", "less", "greater")) {
+  alternative <- match.arg(alternative)
+  stopifnot(all(k >= 0) && all(k <= n) && all(n >= 1))
+  stopifnot(all(conf.level >= 0) && all(conf.level <= 1))
+  
+  ## significance level for underlying hypothesis test (with optional Bonferroni correction)
+  alpha <- if (alternative == "two.sided") (1 - conf.level) / 2 else (1 - conf.level)
+  if (correct) alpha <- alpha / length(k) # Bonferroni correction
+  alpha <- rep_len(alpha, length(k))      # needs to be vector for safe.qbeta() 
+  
+  ## Clopper-Pearson method: invert binomial test (using incomplete Beta function)
+  lower <- safe.qbeta(alpha, k, n - k + 1)
+  upper <- safe.qbeta(alpha, k + 1, n - k, lower.tail=FALSE)
+  switch(alternative,
+         two.sided = data.frame(lower = lower, upper = upper),
+         less      = data.frame(lower = 0,     upper = upper),
+         greater   = data.frame(lower = lower, upper = 1))
+}
+
+## safely compute qbeta even for shape parameters alpha == 0 or beta == 0
+safe.qbeta <- function (p, shape1, shape2, lower.tail=TRUE) {
+  stopifnot(length(p) == length(shape1) && length(p) == length(shape2))
+  is.0 <- shape1 <= 0
+  is.1 <- shape2 <= 0
+  ok <- !(is.0 | is.1)
+  x <- numeric(length(p))
+  x[ok] <- qbeta(p[ok], shape1[ok], shape2[ok], lower.tail=lower.tail) # shape parameters are valid
+  x[is.0 & !is.1] <- 0 # density concentrated at x = 0 (for alpha == 0)
+  x[is.1 & !is.0] <- 1 # density concentrated at x = 1 (for beta == 0)
+  x[is.0 & is.1] <- NA # shouldn't happen in our case (alpha == beta == 0)
+  x
+}
+
+LRC <- function (f1, f2, N1, N2, conf.level=.95, correct=TRUE) {
+  stopifnot(length(f1) == length(f2))
+  stopifnot(all(f1 + f2 >= 1))
+  
+  ## exact confidence interval from conditional Poisson test (two-sided)
+  tau <- binom.confint(f1, f1 + f2, conf.level=conf.level, correct=correct, alternative="two.sided")
+  ifelse(f1 / N1 >= f2 / N2, 
+         pmax(log2( (N2 / N1) * tau$lower / (1 - tau$lower) ), 0),  # p1 >= p2 -> use lower bound (clamped to >= 0)
+         pmin(log2( (N2 / N1) * tau$upper / (1 - tau$upper) ), 0))  # p1 < p2  -> use upper bound (clamped to <= 0)
+}
+
+PositiveLRC <- function (f1, f2, N1, N2, conf.level=.95, correct=TRUE) {
+  stopifnot(length(f1) == length(f2))
+  stopifnot(all(f1 + f2 >= 1))
+  
+  ## exact confidence interval from conditional Poisson test (one-sided)
+  tau <- binom.confint(f1, f1 + f2, conf.level=conf.level, correct=correct, alternative="greater")
+  log2( (N2 / N1) * tau$lower / (1 - tau$lower) )
+}
+
+ApproxLRC <- function (f1, f2, N1, N2, conf.level=.95, correct=TRUE) {
+  stopifnot(length(f1) == length(f2))
+  stopifnot(all(f1 >= 1))
+  
+  alpha <- 1 - conf.level                  # desired significance level 
+  if (correct) alpha <- alpha / length(f1) # Bonferroni correction
+  
+  ## approximate confidence interval based on asymptotic standard deviation of log(rr)
+  f2.disc <- pmax(f2, 0.5) #  with Hardie's (2014) questionable discounting
+  lrr <- log((f1 / N1) / (f2.disc / N2))
+  lrr.sd <- sqrt(1/f1 + 1/f2.disc - 1/N1 - 1/N2) # asymptotic s.d. of log(RR) according to Wikipedia
+  z.factor <- -qnorm(alpha / 2)                  # number of s.d. for asymptotic two-sided conf.int
+  lrr <- ifelse(lrr >= 0, 
+                pmax(lrr - z.factor * lrr.sd, 0), # log(RR) >= 0 -> use lower bound (clamped to >= 0)
+                pmin(lrr + z.factor * lrr.sd, 0)) # log(RR) < 0  -> use upper bound (clamped to <= 0)
+  
+  lrr / log(2) # adjust to log2 units
+}
+
+################################################################################
 
 library(tidyverse)
 
@@ -95,7 +170,7 @@ library(tidyverse)
 # f1 = R1
 # f2 = C1
 # N
-# lr, lr2, clr, clr2
+# lr, lr2, clr
 
 clr <- read_tsv("cqpweb-gold-clr.tsv", skip=3)
 names(clr) <- c('rank', 'lemma', 'f2', 'E11', 'f', 'texts', 'clr')
@@ -163,6 +238,14 @@ res$clr <- LogRatio(
   f1 = res$f, f2 = res$f2 - res$f, N1 = res$f1, N2 = res$N - res$f1,
   length.f1 = NULL, conf.level = .99
 )
+
+# "new" measures / implementations from DH
+res <- res %>% mutate(
+  lrc = LRC(f1 = f, f2 = f2 - f, N1 = f1, N2 = N - f1),
+  lrc.positive = PositiveLRC(f1 = f, f2 = f2 - f, N1 = f1, N2 = N - f1),
+  lrc.normal = ApproxLRC(f1 = f, f2 = f2 - f, N1 = f1, N2 = N - f1),
+)
+
 res %>%
   select(-c("lr.cqpweb", "clr.cqpweb")) %>%
   write_tsv("log-ratio-gold.tsv")

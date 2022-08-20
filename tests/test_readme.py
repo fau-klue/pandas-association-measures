@@ -1,13 +1,11 @@
 import association_measures.frequencies as fq
 import association_measures.measures as am
-from pandas import read_csv
 
 
-def test_input():
+def test_input(ucs_dataframe):
 
     # frequency signature notation
-    df = read_csv("tests/ucs-gold-100.ds", comment='#', index_col=0,
-                  sep="\t", quoting=3, keep_default_na=False)
+    df = ucs_dataframe
     df.rename({'l2': 'item'}, axis=1, inplace=True)
     df = df[['item', 'f', 'f1', 'f2', 'N']]
     df.index.name = 'id'
@@ -37,10 +35,9 @@ def test_input():
     print(obs[['O11', 'O12', 'O21', 'O22']].head())
 
 
-def test_ams():
+def test_ams(ucs_dataframe):
 
-    df = read_csv("tests/ucs-gold-100.ds", comment='#', index_col=0,
-                  sep="\t", quoting=3, keep_default_na=False)
+    df = ucs_dataframe
     df.rename({'l2': 'item'}, axis=1, inplace=True)
 
     df = df[['item', 'f', 'f1', 'f2', 'N']]
@@ -57,10 +54,9 @@ def test_ams():
     print(df_ams.head())
 
 
-def test_score():
+def test_score(ucs_dataframe):
 
-    df = read_csv("tests/ucs-gold-100.ds", comment='#', index_col=0,
-                  sep="\t", quoting=3, keep_default_na=False)
+    df = ucs_dataframe
     df.rename({'l2': 'item'}, axis=1, inplace=True)
 
     ucs_dataframe = df[['item', 'f', 'f1', 'f2', 'N']].set_index('item')
@@ -69,7 +65,7 @@ def test_score():
     f1 = int(ucs_dataframe['f1'].iloc[0])
     N = int(ucs_dataframe['N'].iloc[0])
     print(ucs_dataframe[['f', 'f2']].head())
-    df_sig = am.score(ucs_dataframe[['f', 'f2']], f1, N, measures=['log_likelihood'])
+    df_sig = am.score(ucs_dataframe[['f', 'f2']], f1=f1, N=N, measures=['log_likelihood'])
     print("f1: ", f1)
     print("N: ", N)
     print(df_sig.head())

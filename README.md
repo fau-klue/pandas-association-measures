@@ -126,7 +126,7 @@ You can thus `join` the results directly to the input.
 
 ## Association Measures
 
-The following association measures are currently implemented (v0.2.1):
+The following association measures are currently implemented (v0.2.2):
 
 - asymptotic hypothesis tests:
   - **z-score** (`z_score`)
@@ -148,7 +148,7 @@ The following association measures are currently implemented (v0.2.1):
   - **local mutual information** (`local_mutual_information`)
 - conservative estimates
   - **conservative log-ratio** (`conservative_log_ratio`)
-    - parameters: `disc`, `alpha`, `correct`, `one_sided`
+    - parameters: `disc`, `alpha`, `correct`, `one_sided`, `boundary`
 
 You can either calculate specific measures:
 

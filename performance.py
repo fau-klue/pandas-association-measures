@@ -5,10 +5,12 @@ Script to measure the performance
 import timeit
 import sys
 
-# Number of iterations
+
+# number of iterations
 iterations = 1000
 if len(sys.argv) > 1:
     iterations = int(sys.argv[1])
+
 
 # code snippet to be executed only once
 setup = """
@@ -16,81 +18,86 @@ import pandas as pd
 import association_measures.frequencies as fq
 import association_measures.measures as am
 
-df = pd.read_csv('tests/brown.csv')
+df = pd.read_csv('tests/data/brown.csv')
 
 df = df.join(fq.observed_frequencies(df))
 df = df.join(fq.expected_frequencies(df))
 """
 
+
 # code snippet whose execution time is to be measured
 codes = [
     {
         'name': 'contingency_table',
-        'code': '''
-fq.observed_frequencies(df)
-        '''
+        'code': 'fq.observed_frequencies(df)'
     },
     {
         'name': 'expected_frequencies',
-        'code': '''
-fq.expected_frequencies(df)
-        '''
+        'code': 'fq.expected_frequencies(df)'
     },
+    # asymptotic hypothesis tests
     {
         'name': 'z_score',
-        'code': '''
-df['am'] = am.z_score(df)
-        '''
+        'code': 'am.z_score(df)'
     },
     {
         'name': 't_score',
-        'code': '''
-df['am'] = am.t_score(df)
-        '''
-    },
-    {
-        'name': 'mutual_information',
-        'code': '''
-df['am'] = am.mutual_information(df)
-        '''
-    },
-    {
-        'name': 'dice',
-        'code': '''
-df['am'] = am.dice(df)
-        '''
+        'code': 'am.t_score(df)'
     },
     {
         'name': 'log_likelihood',
-        'code': '''
-df['am'] = am.log_likelihood(df)
-        '''
+        'code': 'am.log_likelihood(df)'
+    },
+    {
+        'name': 'simple_ll',
+        'code': 'am.simple_ll(df)'
+    },
+    # point estimates of association strength
+    {
+        'name': 'min_sensitivity',
+        'code': 'am.min_sensitivity(df)'
+    },
+    {
+        'name': 'liddell',
+        'code': 'am.liddell(df)'
+    },
+    {
+        'name': 'dice',
+        'code': 'am.dice(df)'
     },
     {
         'name': 'log_ratio',
-        'code': '''
-df['am'] = am.log_ratio(df)
-        '''
+        'code': 'am.log_ratio(df)'
     },
-    {
-        'name': 'conservative_log_ratio',
-        'code': '''
-df['am'] = am.conservative_log_ratio(df)
-        '''
-    },
+    # likelihood measures
+    # ~2.5s for a ~25,000 rows on 8 threads
+    # {
+    #     'name': 'hypergeometric_likelihood',
+    #     'code': 'am.hypergeometric_likelihood(df)'
+    # },
     {
         'name': 'binomial_likelihood',
-        'code': '''
-df['am'] = am.binomial_likelihood(df)
-        '''
+        'code': 'am.binomial_likelihood(df)'
     },
-    # too slow (one iteration > 3 sec)
-    #     {
-    #         'name': 'hypergeometric_likelihood',
-    #         'code': '''
-    # df['am'] = am.hypergeometric_likelihood(df)
-    #         '''
-    #     },
+    # conservative estimates
+    {
+        'name': 'conservative_log_ratio',
+        'code': 'am.conservative_log_ratio(df)'
+    },
+    # ~1.5s for a ~25,000 rows on 8 threads
+    # {
+    #     'name': 'conservative_log_ratio_poisson',
+    #     'code': 'am.conservative_log_ratio(df, boundary="poisson")'
+    # },
+    # information theory
+    {
+        'name': 'mutual_information',
+        'code': 'am.mutual_information(df)'
+    },
+    {
+        'name': 'local_mutual_information',
+        'code': 'am.local_mutual_information(df)'
+    },
 ]
 
 for code in codes:
