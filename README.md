@@ -34,43 +34,43 @@ http://www.collocations.de/AM/index.html
 
 The module expects a pandas dataframe with reasonably named columns; i.e. the columns must follow one of the following notations:
 
-- contingency table:
-  ```python3
-  >>> df
-              item  O11    O12  O21     O22
-  id
-  1    appreciated    1  15333    1  176663
-  2        certain    7  15327  113  176551
-  3      measuring    1  15333    7  176657
-  4   particularly    2  15332   45  176619
-  5        arrived    2  15332    3  176661
-  ```
+### contingency table
+```python3
+>>> df
+            item  O11    O12  O21     O22
+id
+1    appreciated    1  15333    1  176663
+2        certain    7  15327  113  176551
+3      measuring    1  15333    7  176657
+4   particularly    2  15332   45  176619
+5        arrived    2  15332    3  176661
+```
 
-- frequency signature (see [Evert 2008: Figure 8](https://www.stephanie-evert.de/PUB/Evert2007HSK_extended_manuscript.pdf)):
-  ```python3
-  >>> df
-            item  f     f1   f2       N
-  id
-  1    appreciated  1  15334    2  191998
-  2        certain  7  15334  120  191998
-  3      measuring  1  15334    8  191998
-  4   particularly  2  15334   47  191998
-  5        arrived  2  15334    5  191998
-  ```
-  where `f=O11`, `f1=O11+O12`, `f2=O11+O21`, `N=O11+O12+O21+O22`.
+### frequency signature (see [Evert 2008: Figure 8](https://www.stephanie-evert.de/PUB/Evert2007HSK_extended_manuscript.pdf))
+```python3
+>>> df
+          item  f     f1   f2       N
+id
+1    appreciated  1  15334    2  191998
+2        certain  7  15334  120  191998
+3      measuring  1  15334    8  191998
+4   particularly  2  15334   47  191998
+5        arrived  2  15334    5  191998
+```
+where `f=O11`, `f1=O11+O12`, `f2=O11+O21`, `N=O11+O12+O21+O22`.
 
-- corpus frequencies (“keyword-friendly”):
-  ```python3
-  >>> df
-              item  f1     N1   f2      N2
-  id
-  1    appreciated   1  15334    1  176664
-  2        certain   7  15334  113  176664
-  3      measuring   1  15334    7  176664
-  4   particularly   2  15334   45  176664
-  5        arrived   2  15334    3  176664
-  ```
-  where `f1=O11`, `f2=O21`, `N1=O11+O12`, `N2=O21+O22`.
+### corpus frequencies (“keyword-friendly”)
+```python3
+>>> df
+            item  f1     N1   f2      N2
+id
+1    appreciated   1  15334    1  176664
+2        certain   7  15334  113  176664
+3      measuring   1  15334    7  176664
+4   particularly   2  15334   45  176664
+5        arrived   2  15334    3  176664
+```
+where `f1=O11`, `f2=O21`, `N1=O11+O12`, `N2=O21+O22`.
 
 ## Frequencies
 Given a dataframe as specified above, you can calculate expected frequencies via
@@ -148,7 +148,7 @@ The following association measures are currently implemented (v0.2.2):
   - **local mutual information** (`local_mutual_information`)
 - conservative estimates
   - **conservative log-ratio** (`conservative_log_ratio`)
-    - parameters: `disc`, `alpha`, `correct`, `one_sided`, `boundary`
+    - parameters: `disc`, `alpha`, `correct`, `one_sided`, `boundary`, `vocab`
 
 You can either calculate specific measures:
 
@@ -203,7 +203,7 @@ arrived       2.533018  1.131847        3.879126   3.243141  0.000261   2.941240
   arrived        2    3
   >>> am.score(df, N1=15334, N2=176664, measures=['log_likelihood'])
   ```
-  
+
 Note that `score()` also returns absolute frequencies and instances per million by default:
 ```python3
               O11    O12  O21     O22       E11           E12         E21            E22  log_likelihood         ipm  ipm_reference  ipm_expected
@@ -239,4 +239,7 @@ make test
 
 # Coverage
 make coverage
+
+# Performance
+make performance
 ```

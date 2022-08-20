@@ -24,6 +24,15 @@ REQUIRED = [
 
 here = os.path.abspath(os.path.dirname(__file__))
 
+# description
+with open(os.path.join(here, 'README.md')) as f:
+    long_description = f.read()
+
+# version
+version = {}
+with open(os.path.join(here, 'association_measures', 'version.py')) as f:
+    exec(f.read(), version)
+
 
 # Import Cython if available
 try:
@@ -34,19 +43,6 @@ except ImportError:
     cythonize = lambda x, *args, **kwargs: x  # dummy func
     CYTHON_INSTALLED = False
     extensions = [Extension('association_measures.binomial', ['association_measures/binomial.c'])]
-
-
-# read long description from README
-try:
-    with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
-        long_description = '\n' + f.read()
-except FileNotFoundError:
-    long_description = DESCRIPTION
-
-# Load the package's version.py module as a dictionary.
-version = {}
-with open(os.path.join(here, 'association_measures', 'version.py')) as f:
-    exec(f.read(), version)
 
 
 class UploadCommand(Command):
