@@ -11,6 +11,21 @@ def test_observed_frequencies(fixed_dataframe):
     assert df['O22'][0] == 90
 
 
+def test_observed_frequencies_marginals(fixed_dataframe):
+
+    df = fq.observed_frequencies(fixed_dataframe, marginals=True)
+
+    assert df['O11'][0] == 10
+    assert df['O12'][0] == 0
+    assert df['O21'][0] == 0
+    assert df['O22'][0] == 90
+    assert df['N'][0] == 100
+    assert df['C2'][0] == 90
+    assert df['C1'][0] == 10
+    assert df['R2'][0] == 90
+    assert df['R1'][0] == 10
+
+
 def test_expected_frequencies(fixed_dataframe):
 
     df = fq.expected_frequencies(fixed_dataframe)
@@ -18,15 +33,17 @@ def test_expected_frequencies(fixed_dataframe):
     assert df['E11'][0] == 1.0
 
 
+def test_expected_frequencies_observed(fixed_dataframe):
+
+    df = fq.expected_frequencies(fixed_dataframe, observed=True)
+
+    assert df['O11'][0] == 10
+    assert df['E11'][0] == 1.0
+
+
 def test_ucs(ucs_dataframe):
 
     df = ucs_dataframe
-
-    # ucs data has the following relevant columns
-    # f = O11
-    # f1 = R1
-    # f2 = C1
-    # N
 
     # get observed frequencies
     df['O11'] = df['f']
