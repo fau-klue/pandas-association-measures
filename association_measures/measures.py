@@ -6,6 +6,7 @@ association measures
 import numpy as np
 from pandas import concat
 from scipy.stats import norm, beta
+from warnings import warn
 
 from .binomial import choose
 from .frequencies import expected_frequencies, observed_frequencies
@@ -48,69 +49,19 @@ def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
           freq=True, per_million=True, digits=6, disc=.001,
           signed=True, alpha=.001, correct='Bonferroni',
           boundary='normal', vocab=None, one_sided=False):
+    """Calculate a list of association measures on columns of df. Defaults
+    to all available (and numerically stable) measures.
 
-    """Wrapper for `calculate_measures` that also allows integer counts to
-    be given as parameters. This is reasonable for the following notations:
-
-    - frequency signature: integers f1, N (df contains f, f2)
-    - corpus frequencies: integers N1, N2 (df contains f1, f2)
-
-    Note that the wrapper also sets reasonable defaults for keyword
-    arguments that will be passed to the respective measures.
-
-    See `calculate_measures` for more info.
-
-    """
-
-    if all(v is None for v in [f1, N1, N2, N]):
-        pass
-
-    elif f1 is not None and N is not None:
-        try:
-            df = df[['f', 'f2']].copy()
-            df['f1'] = f1
-            df['N'] = N
-        except KeyError:
-            raise ValueError(
-                'frequency signature notation: (f1, N) are given, but (f, f2) are not'
-            )
-
-    elif N1 is not None and N2 is not None:
-        try:
-            df = df[['f1', 'f2']].copy()
-            df['N1'] = N1
-            df['N2'] = N2
-        except KeyError:
-            raise ValueError(
-                'corpus frequency notation: (N1, N2) are given, but (f1, f2) are not'
-            )
-
-    else:
-        raise ValueError(
-            'either (f1, N) OR (N1, N2) have to be given'
-        )
-
-    df = calculate_measures(df, measures, freq, per_million, digits,
-                            disc=disc, signed=signed, alpha=alpha,
-                            boundary=boundary, vocab=vocab,
-                            correct=correct, one_sided=one_sided)
-
-    return df
-
-
-def calculate_measures(df, measures=None, freq=False,
-                       per_million=True, digits=None, **kwargs):
-    """Calculate a list of association measures on columns of
-    df. Defaults to all available (and numerically stable) measures.
-
-    Columns must follow one of the following notations:
+    Columns of df must follow one of the following notations:
     - contingency table: O11, O12, O21, O22
     - frequency signature: f, f1, f2, N
     - corpus frequencies: f1, N1, f2, N2
+    Integers (f1, N, N1, N2) can also be passed as scalar arguments. See
+    frequencies.observed_frequencies for further info on notation.
 
     :param DataFrame df: Dataframe with reasonably-named frequency columns
-    :param list measures: names of AMs (or AMs)
-    :param bool freq: also return observed and expected frequencies?
+    :param list measures: names of measures (or measures)
+    :param bool freq: also return observed and expected frequencies (incl. marginals)?
     :param bool per_million: return instances per million? (only if freq is True)
     :param int digits: round scores
 
@@ -118,7 +69,7 @@ def calculate_measures(df, measures=None, freq=False,
     :param float disc: discounting (or smoothing) parameter for O11 == 0 (and O21 == 0)
     :param bool signed: enforce negative values for rows with O11 < E11?
     :param float alpha: CLR: significance level
-    :param str boundary: exact CI boundary of [poisson] distribution or [normal] approximation?
+    :param str boundary: CLR: exact CI boundary of [poisson] distribution or [normal] approximation?
     :param str correct: CLR: correction type repeated tests (None|"Bonferroni"|"Sidak")
     :param int vocab: CLR: size of vocabulary (number of comparisons for correcting alpha)
     :param bool one_sided: CLR: calculate one- or two-sided confidence interval
@@ -129,39 +80,49 @@ def calculate_measures(df, measures=None, freq=False,
     """
 
     # convert input to contingency notation and calculate expected frequencies
-    df_obs = observed_frequencies(df)
-    df_exp = expected_frequencies(df)
-    df = df_obs.join(df_exp)
+    df = observed_frequencies(df, f1=f1, N=N, N1=N1, N2=N2)
+    df = expected_frequencies(df, observed=True)
     freq_columns = df.columns
 
     # select measures
     ams_all = list_measures()
     if measures is not None:
         if isinstance(measures[0], str):
+            # TODO issue warning if measure not in list
             measures = [ams_all[k] for k in measures if k in ams_all.keys()]
     else:
         measures = [ams_all[k] for k in ams_all]
 
     # calculate measures
     for measure in measures:
-        df[measure.__name__] = measure(df, **kwargs)
+        df[measure.__name__] = measure(
+            df, disc=disc, signed=signed, alpha=alpha,
+            correct=correct, boundary=boundary, vocab=vocab, one_sided=one_sided
+        )
 
+    # frequency columns?
     if not freq:
         df = df.drop(freq_columns, axis=1)
-
     else:
         # add instances (per million)
         fac = 10**6 if per_million else 1
         name = 'ipm' if per_million else 'instances'
-        R1 = df['O11'] + df['O12']
-        R2 = df['O21'] + df['O22']
-        df[name] = df['O11'] / R1 * fac
-        df[name + '_reference'] = df['O21'] / R2 * fac
-        df[name + '_expected'] = df['E11'] / R1 * fac
+        df[name] = df['O11'] / df['R1'] * fac
+        df[name + '_reference'] = df['O21'] / df['R2'] * fac
+        df[name + '_expected'] = df['E11'] / df['R1'] * fac
 
+    # rounding
     df = round(df, digits) if digits is not None else df
 
     return df
+
+
+def calculate_measures(df, measures=None, freq=False, per_million=True, digits=None, **kwargs):
+    """deprecated since 0.2.3, use `score()` instead.
+
+    """
+    warn("deprecated since version 0.2.3, use score() instead", DeprecationWarning, stacklevel=2)
+    return score(df, measures=measures, freq=freq, per_million=per_million, digits=digits, **kwargs)
 
 
 ###############################
@@ -259,16 +220,13 @@ def simple_ll(df, signed=True, **kwargs):
 def min_sensitivity(df, **kwargs):
     """Calculate Minimum Sensitivity.
 
-    :param DataFrame df: pd.DataFrame with columns O11, O12, O21
+    :param DataFrame df: pd.DataFrame with columns O11, R1, C1
     :return: dice
     :rtype: pd.Series
     """
 
-    R1 = df['O11'] + df['O12']
-    C1 = df['O11'] + df['O21']
-
-    am1 = df['O11'] / R1
-    am2 = df['O11'] / C1
+    am1 = df['O11'] / df['R1']
+    am2 = df['O11'] / df['C1']
     am = concat([am1, am2], axis=1).min(axis=1)
 
     return am
@@ -277,15 +235,12 @@ def min_sensitivity(df, **kwargs):
 def liddell(df, **kwargs):
     """Calculate Liddell
 
-    :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
+    :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22, C1, C2
     :return: liddell
     :rtype: pd.Series
     """
 
-    C1 = df['O11'] + df['O21']
-    C2 = df['O21'] + df['O22']
-
-    am = (df['O11'] * df['O22'] - df['O21'] * df['O21']) / C1 / C2
+    am = (df['O11'] * df['O22'] - df['O12'] * df['O21']) / df['C1'] / df['C2']
 
     return am
 
@@ -305,10 +260,9 @@ def dice(df, **kwargs):
 
 
 def log_ratio(df, disc=.5, **kwargs):
-    """
-    Calculate log-ratio, a.k.a. relative risk
+    """Calculate log-ratio, i.e. binary logarithm of relative risk
 
-    :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
+    :param DataFrame df: pd.DataFrame with columns O11, O21, R1, R2
     :param float disc: discounting (or smoothing) parameter for O11 == 0 and O21 == 0
     :return: log-ratio
     :rtype: pd.Series
@@ -318,10 +272,7 @@ def log_ratio(df, disc=.5, **kwargs):
     O11_disc = df['O11'].where(df['O11'] != 0, disc)
     O21_disc = df['O21'].where(df['O21'] != 0, disc)
 
-    R1 = df['O11'] + df['O12']
-    R2 = df['O21'] + df['O22']
-
-    am = np.log2((O11_disc / O21_disc) / (R1 / R2))
+    am = np.log2((O11_disc / O21_disc) / (df['R1'] / df['R2']))
 
     return am
 
@@ -357,7 +308,7 @@ def binomial_likelihood(df, **kwargs):
     """
     Calculate binomial-likelihood
 
-    :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22, E11
+    :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22, E11, N
     :return: binomial-likelihood
     :rtype: pd.Series
     """
@@ -366,12 +317,10 @@ def binomial_likelihood(df, **kwargs):
         {'O11': 'int32', 'O12': 'int32', 'O21': 'int32', 'O22': 'int32', 'E11': 'int32'}
     )
 
-    N = df['O11'] + df['O12'] + df['O21'] + df['O22']
-
     np.seterr(all='ignore')
-    c1 = CHOOSE(N, df['O11'])
-    c2 = (df['E11'] / N) ** df['O11']
-    c3 = (1 - df['E11'] / N) ** (N - df['O11'])
+    c1 = CHOOSE(df['N'], df['O11'])
+    c2 = (df['E11'] / df['N']) ** df['O11']
+    c3 = (1 - df['E11'] / df['N']) ** (df['N'] - df['O11'])
     am = c1 * c2 * c3
     np.seterr(all='warn')
 
@@ -382,24 +331,24 @@ def binomial_likelihood(df, **kwargs):
 # CONSERVATIVE ESTIMATES #
 ##########################
 
-def get_poisson_ci_boundary(alpha, O11, N1, O21, N2):
+def get_poisson_ci_boundary(alpha, O11, R1, O21, R2):
     """
-    Get the lower (if O11 / N1 >= O21 / N2) or upper (else) bound of
+    Get the lower (if O11 / R1 >= O21 / R2) or upper (else) bound of
     the CI of a Poisson distribution
 
     :param float alpha: sig. level
     :param int O11:
-    :param int N1:
+    :param int R1:
     :param int O21:
-    :param int N2:
+    :param int R2:
     """
 
-    if (O11 / N1) >= (O21 / N2):
+    if (O11 / R1) >= (O21 / R2):
         lower = beta.ppf(alpha, O11, O21 + 1)
-        boundary = max(np.log2((N2 / N1) * lower / (1 - lower)), 0)
+        boundary = max(np.log2((R2 / R1) * lower / (1 - lower)), 0)
     else:
         upper = beta.ppf(1 - alpha, O11 + 1, O21)
-        boundary = min(np.log2((N2 / N1) * upper / (1 - upper)), 0)
+        boundary = min(np.log2((R2 / R1) * upper / (1 - upper)), 0)
 
     return boundary
 
@@ -451,22 +400,17 @@ def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
 
     # Poisson approximation (Evert 2022)
     if boundary == 'poisson':
-        tmp = df[['O11', 'O12', 'O21', 'O22']].copy()
-        tmp['N1'] = tmp['O11'] + tmp['O12']
-        tmp['N2'] = tmp['O21'] + tmp['O22']
-        clrr = BOUNDARY(alpha, tmp['O11'], tmp['N1'], tmp['O21'], tmp['N2'])
+        clrr = BOUNDARY(alpha, df['O11'], df['R1'], df['O21'], df['R2'])
 
     # Normal approximation (Hardie 2014)
     elif boundary == 'normal':
-        R1 = df['O11'] + df['O12']
-        R2 = df['O21'] + df['O22']
         # - questionable discounting according to Hardie (2014)
         O11_disc = df['O11'].where(df['O11'] != 0, disc)
         O21_disc = df['O21'].where(df['O21'] != 0, disc)
         # - compute natural logarithm of relative risk so we can use estimate for standard error of log(RR)
-        lrr = np.log((O11_disc / O21_disc) / (R1 / R2))
+        lrr = np.log((O11_disc / O21_disc) / (df['R1'] / df['R2']))
         # - asymptotic standard deviation of log(RR) according to Wikipedia
-        lrr_sd = np.sqrt(1/O11_disc + 1/O21_disc - 1/R1 - 1/R2)
+        lrr_sd = np.sqrt(1/O11_disc + 1/O21_disc - 1/df['R1'] - 1/df['R2'])
         # - calculate and apply appropriate boundary
         z_factor = norm.ppf(1 - alpha)
         ci_min = (lrr - lrr_sd * z_factor).clip(lower=0)

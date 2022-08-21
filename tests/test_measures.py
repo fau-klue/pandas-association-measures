@@ -13,7 +13,7 @@ import association_measures.frequencies as fq
 @pytest.mark.mi
 def test_mutual_information_single(fixed_dataframe):
 
-    df = fixed_dataframe
+    df = fq.expected_frequencies(fixed_dataframe, observed=True)
     df_ams = am.mutual_information(df)
     assert df_ams[0] == 1.0
 
@@ -51,7 +51,7 @@ def test_mutual_information_zero(zero_dataframe):
 @pytest.mark.local_mi
 def test_local_mi_single(fixed_dataframe):
 
-    df = fixed_dataframe
+    df = fq.expected_frequencies(fixed_dataframe, observed=True)
     df_ams = am.local_mutual_information(df)
     assert df_ams[0] == 10.0
 
@@ -119,7 +119,7 @@ def test_dice_zero(zero_dataframe):
 @pytest.mark.t_score
 def test_t_score_single(fixed_dataframe):
 
-    df = fixed_dataframe
+    df = fq.expected_frequencies(fixed_dataframe, observed=True)
     m = am.t_score(df)
     assert m[0] == 2.846049894151541
 
@@ -232,7 +232,7 @@ def test_simple_ll_zero(zero_dataframe):
 @pytest.mark.choose
 @pytest.mark.hypergeometric_likelihood
 def test_hypergeometric_likelihood(fixed_dataframe):
-    df = fixed_dataframe
+    df = fq.expected_frequencies(fixed_dataframe, observed=True)
     df_ams = am.hypergeometric_likelihood(df)
     assert df_ams[0] == 5.776904234533874e-14
 
@@ -240,9 +240,7 @@ def test_hypergeometric_likelihood(fixed_dataframe):
 @pytest.mark.choose
 @pytest.mark.hypergeometric_likelihood
 def test_hypergeometric_likelihood_brown_overflow(brown_dataframe):
-    df = brown_dataframe
-    df = df.join(fq.observed_frequencies(df), rsuffix='_')
-    df = df.head(10)
+    df = fq.expected_frequencies(brown_dataframe, observed=True).head(10)
     df['hypergeometric_likelihood'] = am.hypergeometric_likelihood(df)
     assert df['hypergeometric_likelihood'].isnull().any()
 
@@ -251,9 +249,7 @@ def test_hypergeometric_likelihood_brown_overflow(brown_dataframe):
 @pytest.mark.hypergeometric_likelihood
 @pytest.mark.zero
 def test_hypergeometric_likelihood_zero(zero_dataframe):
-    df = zero_dataframe
-    df = df.join(fq.observed_frequencies(df), rsuffix='_')
-    df = df.join(fq.expected_frequencies(df), rsuffix='_')
+    df = fq.expected_frequencies(zero_dataframe, observed=True)
     ams = am.hypergeometric_likelihood(df)
     assert isnan(ams[0])
 
@@ -266,7 +262,7 @@ def test_hypergeometric_likelihood_zero(zero_dataframe):
 @pytest.mark.choose
 @pytest.mark.binomial_likelihood
 def test_binomial_likelihood(fixed_dataframe):
-    df = fixed_dataframe
+    df = fq.expected_frequencies(fixed_dataframe, observed=True)
     df_ams = am.binomial_likelihood(df)
     assert df_ams[0] == 7.006035693977206e-08
 
@@ -297,9 +293,7 @@ def test_binomial_likelihood_brown_overflow(brown_dataframe):
 @pytest.mark.binomial_likelihood
 @pytest.mark.zero
 def test_binomial_likelihood_zero(zero_dataframe):
-    df = zero_dataframe
-    df = df.join(fq.observed_frequencies(df), rsuffix='_')
-    df = df.join(fq.expected_frequencies(df), rsuffix='_')
+    df = fq.expected_frequencies(zero_dataframe, observed=True)
     ams = am.binomial_likelihood(df)
     assert isnan(ams[0])
 
@@ -366,7 +360,7 @@ def test_conservative_log_ratio_zero_poisson(zero_dataframe):
 @pytest.mark.conservative_log_ratio
 def test_conservative_log_ratio_one_sided(fixed_dataframe):
 
-    df = fixed_dataframe
+    df = fq.expected_frequencies(fixed_dataframe, observed=True)
     df_ams = am.score(df, ['conservative_log_ratio'])
     df_am = am.conservative_log_ratio(df, one_sided=True)
     df_am.name = 'clr_one_sided'
@@ -412,9 +406,9 @@ def test_liddell(fixed_dataframe):
 @pytest.mark.liddell
 def test_liddell_zero(zero_dataframe):
 
-    df = zero_dataframe
+    df = fq.expected_frequencies(zero_dataframe, observed=True)
     df_ams = am.score(df, ['liddell'])
-    assert df_ams['liddell'][0] == 1
+    assert df_ams['liddell'][0] == 0.143858
 
 
 ########
@@ -425,7 +419,7 @@ def test_liddell_zero(zero_dataframe):
 def test_measures_ucs_gold(ucs_dataframe):
 
     df = ucs_dataframe
-    df = df.join(am.score(df))
+    df = df.join(am.score(df, freq=False))
 
     for ucs, assoc in [('am.Dice', 'dice'),
                        ('am.MS', 'min_sensitivity'),
@@ -443,7 +437,7 @@ def test_measures_ucs_gold(ucs_dataframe):
 def test_measures_log_ratio_gold(log_ratio_dataframe):
 
     df = log_ratio_dataframe
-    df = df.join(am.score(df, ['log_ratio', 'conservative_log_ratio'], disc=.5, alpha=.01))
+    df = df.join(am.score(df, ['log_ratio', 'conservative_log_ratio'], disc=.5, alpha=.01, freq=False))
 
     for r, assoc in [('lr', 'log_ratio'),
                      ('clr', 'conservative_log_ratio')]:
@@ -456,13 +450,13 @@ def test_measures_lrc(log_ratio_dataframe):
 
     # original implementation with normal approximation
     df = log_ratio_dataframe
-    df = df.join(am.score(df, ['conservative_log_ratio'], alpha=.05))
+    df = df.join(am.score(df, ['conservative_log_ratio'], alpha=.05, freq=False))
     assert df['conservative_log_ratio'].equals(round(df['lrc.normal'], 6))
 
     # implementation with poisson approximation
     df = log_ratio_dataframe
     df = df.join(am.score(df, ['conservative_log_ratio'],
-                          alpha=.05, boundary='poisson'))
+                          alpha=.05, boundary='poisson', freq=False))
     assert df['conservative_log_ratio'].equals(round(df['lrc'], 6))
 
 
@@ -507,3 +501,10 @@ def test_score_invalid(ucs_dataframe):
 
     with pytest.raises(ValueError):
         am.score(ucs_dataframe, f1=1, N2=1)
+
+
+def test_calculate_measures(zero_dataframe):
+    df = zero_dataframe
+    with pytest.deprecated_call():
+        df_ams = am.calculate_measures(df, ['dice'])
+    df_ams['dice'][0] == 0.16831229174945742
