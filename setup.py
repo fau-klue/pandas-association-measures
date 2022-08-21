@@ -25,12 +25,12 @@ REQUIRED = [
 here = os.path.abspath(os.path.dirname(__file__))
 
 # description
-with open(os.path.join(here, 'README.md')) as f:
+with open(os.path.join(here, 'README.md'), encoding="utf-8") as f:
     long_description = f.read()
 
 # version
 version = {}
-with open(os.path.join(here, 'association_measures', 'version.py')) as f:
+with open(os.path.join(here, 'association_measures', 'version.py'), encoding="utf-8") as f:
     exec(f.read(), version)
 
 
