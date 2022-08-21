@@ -38,7 +38,6 @@ The module expects a pandas dataframe with reasonably named columns; i.e. the co
 ```python3
 >>> df
             item  O11    O12  O21     O22
-id
 1    appreciated    1  15333    1  176663
 2        certain    7  15327  113  176551
 3      measuring    1  15333    7  176657
@@ -49,8 +48,7 @@ id
 ### frequency signature (see [Evert 2008: Figure 8](https://www.stephanie-evert.de/PUB/Evert2007HSK_extended_manuscript.pdf))
 ```python3
 >>> df
-          item  f     f1   f2       N
-id
+            item  f     f1   f2       N
 1    appreciated  1  15334    2  191998
 2        certain  7  15334  120  191998
 3      measuring  1  15334    8  191998
@@ -63,7 +61,6 @@ where `f=O11`, `f1=O11+O12`, `f2=O11+O21`, `N=O11+O12+O21+O22`.
 ```python3
 >>> df
             item  f1     N1   f2      N2
-id
 1    appreciated   1  15334    1  176664
 2        certain   7  15334  113  176664
 3      measuring   1  15334    7  176664
@@ -92,7 +89,6 @@ The `observed_frequency` method will convert to contingency notation:
 >>> import association_measures.frequencies as fq
 >>> fq.observed_frequencies(df)
     O11    O12  O21     O22
-id
 1     1  15333    1  176663
 2     7  15327  113  176551
 3     1  15333    7  176657
@@ -155,17 +151,31 @@ You can either calculate specific measures:
 ```python3
 >>> import association_measures.measures as am
 >>> am.log_likelihood(df)
-id
-1    2.448757
-2   -0.829802
-3    0.191806
-4   -1.059386
-5    3.879126
+item
+appreciated      2.448757
+certain         -0.829802
+measuring        0.191806
+particularly    -1.059386
+arrived          3.879126
 ```
 
-This assumes that `df` contains the necessary columns (observed frequencies in contingency notation and expected frequencies).
+This assumes that `df` contains the necessary columns (observed frequencies in contingency notation and expected frequencies).  In most cases, it is most convenient to just use `score()`:
 
-You can also calculate all available measures:
+```python3
+>>> import association_measures.measures as am
+>>> am.score(df, measures=['log_likelihood'])
+              O11    O12  O21     O22     R1      R2   C1      C2       N       E11           E12         E21            E22  log_likelihood         ipm  ipm_reference  ipm_expected
+item                                                                                                                                                                                 
+appreciated     1  15333    1  176663  15334  176664    2  191996  191998  0.159731  15333.840269    1.840269  176662.159731        2.448757   65.214556       5.660463     10.416775
+certain         7  15327  113  176551  15334  176664  120  191878  191998  9.583850  15324.416150  110.416150  176553.583850       -0.829802  456.501891     639.632296    625.006510
+measuring       1  15333    7  176657  15334  176664    8  191990  191998  0.638923  15333.361077    7.361077  176656.638923        0.191806   65.214556      39.623240     41.667101
+particularly    2  15332   45  176619  15334  176664   47  191951  191998  3.753675  15330.246325   43.246325  176620.753675       -1.059386  130.429112     254.720826    244.794217
+arrived         2  15332    3  176661  15334  176664    5  191993  191998  0.399327  15333.600673    4.600673  176659.399327        3.879126  130.429112      16.981388     26.041938
+```
+
+Note that by default, `score()` yields observed frequencies in contingency notation (and marginal frequencies) as well as expected frequencies. You can turn off this behaviour setting `freq=False`.
+
+To calculate all available measures, don't specify any measures:
 
 ```python3
 >>> am.score(df, freq=False)
@@ -178,9 +188,7 @@ particularly -0.905150 -1.240035       -1.059386  -0.988997         0.000130 -0.
 arrived       2.533018  1.131847        3.879126   3.243141         0.000130  0.320143  0.000261   2.941240             0.000000                     0.0            0.699701                  1.399402
 ```
 
-Note that by default, `score()` yields observed frequencies in contingency notation (and marginal frequencies) as well as expected frequencies.
-
-You can also pass constant integer counts as parameters.  This is reasonable for the following notations:
+You can also pass constant integer counts as parameters to `score()`.  This is reasonable for the following notations:
 
 - frequency signature: integers `f1` and `N` (DataFrame contains columns `f` and `f2`)
   ```python3
@@ -208,7 +216,7 @@ You can also pass constant integer counts as parameters.  This is reasonable for
   >>> am.score(df, N1=15334, N2=176664)
   ```
 
-Some association measures have parameters (see above). You can pass these parameters as keywords to `score`, e.g.:
+Some association measures have parameters (see above). You can pass these parameters as keywords to `score()`, e.g.:
 ```python3
 >>> am.score(df, measures=['log_likelihood'], signed=False, freq=False)
               log_likelihood

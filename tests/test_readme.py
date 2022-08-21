@@ -48,6 +48,9 @@ def test_measures(ucs_dataframe):
     df_ams = am.log_likelihood(df)
     print(df_ams.head())
 
+    df_ams = am.score(df, measures=['log_likelihood'])
+    print(df_ams.head())
+
     df_ams = am.score(df, freq=False)
     print(df_ams.head())
 
