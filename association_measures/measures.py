@@ -343,6 +343,9 @@ def get_poisson_ci_boundary(alpha, O11, R1, O21, R2):
     :param int R2:
     """
 
+    if O11 == O21 == 0:
+        return 0
+
     if (O11 / R1) >= (O21 / R2):
         lower = beta.ppf(alpha, O11, O21 + 1)
         boundary = max(np.log2((R2 / R1) * lower / (1 - lower)), 0)

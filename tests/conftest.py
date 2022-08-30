@@ -52,6 +52,16 @@ def zero_dataframe():
 
 
 @pytest.fixture(scope='function')
+def zero_dataframe_sig():
+    """ Sample DataFrame with lots of zeros in freq. signature notation """
+
+    df = pd.read_csv("tests/data/df-zeros-sig.tsv", index_col=0,
+                     sep="\t", quoting=3, keep_default_na=False)
+
+    return df
+
+
+@pytest.fixture(scope='function')
 def ucs_dataframe():
     """ Sample DataFrame with real data and calculations from UCS.
     Freq. signature notation.

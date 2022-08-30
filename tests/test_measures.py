@@ -358,6 +358,14 @@ def test_conservative_log_ratio_zero_poisson(zero_dataframe):
 
 
 @pytest.mark.conservative_log_ratio
+def test_conservative_log_ratio_zero_poisson_sig(zero_dataframe_sig):
+
+    df = zero_dataframe_sig
+    df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], boundary='poisson')
+    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
+
+
+@pytest.mark.conservative_log_ratio
 def test_conservative_log_ratio_one_sided(fixed_dataframe):
 
     df = fq.expected_frequencies(fixed_dataframe, observed=True)
