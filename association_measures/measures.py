@@ -36,7 +36,7 @@ def list_measures():
         'log_ratio': log_ratio,
         # likelihood measures
         # 'hypergeometric_likelihood': hypergeometric_likelihood,
-        'binomial_likelihood': binomial_likelihood,
+        # 'binomial_likelihood': binomial_likelihood,
         # conservative estimates
         'conservative_log_ratio': conservative_log_ratio,
         # information theory
@@ -121,7 +121,11 @@ def calculate_measures(df, measures=None, freq=False, per_million=True, digits=N
     """deprecated since 0.2.3, use `score()` instead.
 
     """
-    warn("deprecated since version 0.2.3, use score() instead", DeprecationWarning, stacklevel=2)
+    warn(
+        "`calculate_measures()` is deprecated since version 0.2.3, use `score()` instead",
+        DeprecationWarning,
+        stacklevel=2
+    )
     return score(df, measures=measures, freq=freq, per_million=per_million, digits=digits, **kwargs)
 
 
