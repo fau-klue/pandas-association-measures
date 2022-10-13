@@ -20,8 +20,8 @@ import association_measures.measures as am
 
 df = pd.read_csv('tests/data/brown.csv')
 
-df = df.join(fq.observed_frequencies(df))
-df = df.join(fq.expected_frequencies(df))
+df = fq.observed_frequencies(df)
+df = fq.expected_frequencies(df, observed=True)
 """
 
 
