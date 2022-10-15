@@ -360,7 +360,7 @@ def get_poisson_ci_boundary(alpha, O11, R1, O21, R2):
     return boundary
 
 
-BOUNDARY = np.vectorize(get_poisson_ci_boundary)
+BOUNDARY = np.vectorize(get_poisson_ci_boundary, otypes=[float])
 
 
 def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
