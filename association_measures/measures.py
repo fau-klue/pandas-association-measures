@@ -47,8 +47,9 @@ def list_measures():
 
 def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
           freq=True, per_million=True, digits=6, disc=.001,
-          signed=True, alpha=.001, correct='Bonferroni',
-          boundary='normal', vocab=None, one_sided=False):
+          discounting='Walter1975', signed=True, alpha=.001,
+          correct='Bonferroni', boundary='normal', vocab=None,
+          one_sided=False):
     """Calculate a list of association measures on columns of df. Defaults
     to all available (and numerically stable) measures.
 
@@ -67,6 +68,7 @@ def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
 
     Further keyword arguments will be passed to the respective measures:
     :param float disc: discounting (or smoothing) parameter for O11 == 0 (and O21 == 0)
+    :param str discounting: LR: discounting strategy (Walter1975 vs. Hardie2014)
     :param bool signed: enforce negative values for rows with O11 < E11?
     :param float alpha: CLR: significance level
     :param str boundary: CLR: exact CI boundary of [poisson] distribution or [normal] approximation?
@@ -96,7 +98,7 @@ def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
     # calculate measures
     for measure in measures:
         df[measure.__name__] = measure(
-            df, disc=disc, signed=signed, alpha=alpha,
+            df, disc=disc, discounting=discounting, signed=signed, alpha=alpha,
             correct=correct, boundary=boundary, vocab=vocab, one_sided=one_sided
         )
 
@@ -263,20 +265,25 @@ def dice(df, **kwargs):
     return am
 
 
-def log_ratio(df, disc=.5, **kwargs):
+def log_ratio(df, disc=.5, discounting='Walter1975', **kwargs):
     """Calculate log-ratio, i.e. binary logarithm of relative risk
 
     :param DataFrame df: pd.DataFrame with columns O11, O21, R1, R2
     :param float disc: discounting (or smoothing) parameter for O11 == 0 and O21 == 0
+    :param str discounting: discounting according to Walter1975 or Hardie2014?
     :return: log-ratio
     :rtype: pd.Series
     """
 
-    # questionable discounting according to Hardie (2014)
-    O11_disc = df['O11'].where(df['O11'] != 0, disc)
-    O21_disc = df['O21'].where(df['O21'] != 0, disc)
+    if discounting == 'Walter1975':
+        # mathematically sensible discounting according to Walter (1975)
+        am = np.log2(((df['O11'] + disc) / (df['R1'] + disc)) / ((df['O21'] + disc) / (df['R2'] + disc)))
 
-    am = np.log2((O11_disc / O21_disc) / (df['R1'] / df['R2']))
+    elif discounting == 'Hardie2014':
+        # questionable discounting according to Hardie (2014)
+        O11_disc = df['O11'].where(df['O11'] != 0, disc)
+        O21_disc = df['O21'].where(df['O21'] != 0, disc)
+        am = np.log2((O11_disc / O21_disc) / (df['R1'] / df['R2']))
 
     return am
 

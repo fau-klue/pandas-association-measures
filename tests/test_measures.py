@@ -306,7 +306,7 @@ def test_binomial_likelihood_zero(zero_dataframe):
 def test_log_ratio(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.score(df, ['log_ratio'], disc=.5)
+    df_ams = am.score(df, ['log_ratio'], disc=.5, discounting='Hardie2014')
     assert df_ams['log_ratio'][0] == 7.491853
 
 
@@ -324,7 +324,7 @@ def test_log_ratio_invalid(invalid_dataframe):
 def test_log_ratio_zero(zero_dataframe):
 
     df = zero_dataframe
-    df_ams = am.score(df, ['log_ratio'], disc=.5)
+    df_ams = am.score(df, ['log_ratio'], disc=.5, discounting='Hardie2014')
     assert df_ams['log_ratio'][0] == 12.03645
 
 
@@ -445,7 +445,8 @@ def test_measures_ucs_gold(ucs_dataframe):
 def test_measures_log_ratio_gold(log_ratio_dataframe):
 
     df = log_ratio_dataframe
-    df = df.join(am.score(df, ['log_ratio', 'conservative_log_ratio'], disc=.5, alpha=.01, freq=False))
+    df = df.join(am.score(df, ['log_ratio', 'conservative_log_ratio'],
+                          discounting='Hardie2014', disc=.5, alpha=.01, freq=False))
 
     for r, assoc in [('lr', 'log_ratio'),
                      ('clr', 'conservative_log_ratio')]:
