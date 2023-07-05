@@ -346,7 +346,7 @@ def test_conservative_log_ratio_zero(zero_dataframe):
 
     df = zero_dataframe
     df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'])
-    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
+    assert (abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all()
 
 
 @pytest.mark.conservative_log_ratio
@@ -354,7 +354,7 @@ def test_conservative_log_ratio_zero_poisson(zero_dataframe):
 
     df = zero_dataframe
     df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], boundary='poisson')
-    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
+    assert (abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all()
 
 
 @pytest.mark.conservative_log_ratio
@@ -362,7 +362,7 @@ def test_conservative_log_ratio_zero_poisson_sig(zero_dataframe_sig):
 
     df = zero_dataframe_sig
     df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], boundary='poisson')
-    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
+    assert (abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all()
 
 
 @pytest.mark.conservative_log_ratio
@@ -373,7 +373,7 @@ def test_conservative_log_ratio_one_sided(fixed_dataframe):
     df_am = am.conservative_log_ratio(df, one_sided=True)
     df_am.name = 'clr_one_sided'
     df_ams = df_ams.join(df_am)
-    assert((abs(df_ams['conservative_log_ratio']) <= abs(df_ams['clr_one_sided'])).all())
+    assert (abs(df_ams['conservative_log_ratio']) <= abs(df_ams['clr_one_sided'])).all()
 
 
 @pytest.mark.conservative_log_ratio
@@ -455,7 +455,7 @@ def test_measures_log_ratio_gold(log_ratio_dataframe):
 
 
 @pytest.mark.gold
-def test_measures_lrc(log_ratio_dataframe):
+def test_measures_lrc_gold(log_ratio_dataframe):
 
     # original implementation with normal approximation
     df = log_ratio_dataframe

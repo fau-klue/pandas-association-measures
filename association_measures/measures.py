@@ -342,34 +342,6 @@ def binomial_likelihood(df, **kwargs):
 # CONSERVATIVE ESTIMATES #
 ##########################
 
-def get_poisson_ci_boundary(alpha, O11, R1, O21, R2):
-    """
-    Get the lower (if O11 / R1 >= O21 / R2) or upper (else) bound of
-    the CI of a Poisson distribution
-
-    :param float alpha: sig. level
-    :param int O11:
-    :param int R1:
-    :param int O21:
-    :param int R2:
-    """
-
-    if O11 == O21 == 0:
-        return 0
-
-    if (O11 / R1) >= (O21 / R2):
-        lower = beta.ppf(alpha, O11, O21 + 1)
-        boundary = max(np.log2((R2 / R1) * lower / (1 - lower)), 0)
-    else:
-        upper = beta.ppf(1 - alpha, O11 + 1, O21)
-        boundary = min(np.log2((R2 / R1) * upper / (1 - upper)), 0)
-
-    return boundary
-
-
-BOUNDARY = np.vectorize(get_poisson_ci_boundary, otypes=[float])
-
-
 def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
                            correct='Bonferroni', vocab=None,
                            one_sided=False, **kwargs):
@@ -414,7 +386,21 @@ def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
 
     # Poisson approximation (Evert 2022)
     if boundary == 'poisson':
-        clrr = BOUNDARY(alpha, df['O11'], df['R1'], df['O21'], df['R2'])
+
+        # only calculate where_lower
+        lower = beta.ppf(alpha, df['O11'], df['O21'] + 1)
+        lower_boundary = np.log2((df['R2'] / df['R1']) * lower / (1 - lower)).clip(lower=0)
+
+        # only calculate where_upper
+        upper = beta.ppf(1 - alpha, df['O11'] + 1, df['O21'])
+        upper_boundary = np.log2((df['R2'] / df['R1']) * upper / (1 - upper)).clip(upper=0)
+
+        # combine, set to 0 where (df['O11'] == 0) & (df['O12'] == 0)
+        clrr = lower_boundary.where(
+            (df['O11'] / df['R1']) >= (df['O21'] / df['R2']),
+            upper_boundary
+        )
+        clrr = clrr.where(~((df['O11'] == 0) & (df['O12'] == 0)), 0).fillna(0)
 
     # Normal approximation (Hardie 2014)
     elif boundary == 'normal':
