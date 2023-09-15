@@ -336,7 +336,7 @@ def test_log_ratio_zero(zero_dataframe):
 def test_conservative_log_ratio(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], disc=.5, alpha=.01)
+    df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], boundary='normal', disc=.5, alpha=.01)
     assert (abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all()
     assert df_ams['conservative_log_ratio'].iloc[0] == 0.796936
 
@@ -369,7 +369,7 @@ def test_conservative_log_ratio_zero_poisson_sig(zero_dataframe_sig):
 def test_conservative_log_ratio_one_sided(fixed_dataframe):
 
     df = fq.expected_frequencies(fixed_dataframe, observed=True)
-    df_ams = am.score(df, ['conservative_log_ratio'])
+    df_ams = am.score(df, ['conservative_log_ratio'], boundary='normal')
     df_am = am.conservative_log_ratio(df, one_sided=True)
     df_am.name = 'clr_one_sided'
     df_ams = df_ams.join(df_am)
@@ -381,10 +381,10 @@ def test_conservative_log_ratio_boundaries(brown_dataframe):
 
     df = brown_dataframe
     df_ams = am.score(df, ['conservative_log_ratio'])
-    df_am = am.score(df, ['conservative_log_ratio'], boundary="poisson")['conservative_log_ratio']
-    df_am.name = 'clr_poisson'
+    df_am = am.score(df, ['conservative_log_ratio'], boundary="normal")['conservative_log_ratio']
+    df_am.name = 'clr_normal'
     df_ams = df_ams.join(df_am)
-    assert (df_ams['conservative_log_ratio'] == 0).sum() < (df_ams['clr_poisson'] == 0).sum()
+    assert (df_ams['clr_normal'] == 0).sum() < (df_ams['conservative_log_ratio'] == 0).sum()
 
 
 ###################
@@ -445,7 +445,7 @@ def test_measures_ucs_gold(ucs_dataframe):
 def test_measures_log_ratio_gold(log_ratio_dataframe):
 
     df = log_ratio_dataframe
-    df = df.join(am.score(df, ['log_ratio', 'conservative_log_ratio'],
+    df = df.join(am.score(df, ['log_ratio', 'conservative_log_ratio'], boundary='normal',
                           discounting='Hardie2014', disc=.5, alpha=.01, freq=False))
 
     for r, assoc in [('lr', 'log_ratio'),
@@ -459,7 +459,7 @@ def test_measures_lrc_gold(log_ratio_dataframe):
 
     # original implementation with normal approximation
     df = log_ratio_dataframe
-    df = df.join(am.score(df, ['conservative_log_ratio'], alpha=.05, freq=False))
+    df = df.join(am.score(df, ['conservative_log_ratio'], boundary='normal', alpha=.05, freq=False))
     assert df['conservative_log_ratio'].equals(round(df['lrc.normal'], 6))
 
     # implementation with poisson approximation
