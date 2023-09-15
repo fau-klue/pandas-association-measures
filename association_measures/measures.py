@@ -48,7 +48,7 @@ def list_measures():
 def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
           freq=True, per_million=True, digits=6, disc=.001,
           discounting='Walter1975', signed=True, alpha=.001,
-          correct='Bonferroni', boundary='normal', vocab=None,
+          correct='Bonferroni', boundary='poisson', vocab=None,
           one_sided=False):
     """Calculate a list of association measures on columns of df. Defaults
     to all available (and numerically stable) measures.
