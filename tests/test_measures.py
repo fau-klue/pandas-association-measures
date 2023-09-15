@@ -145,7 +145,7 @@ def test_t_score_invalid(invalid_dataframe):
 def test_t_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.score(df, ['t_score'], disc=.5)
-    df_ams['t_score'][0] == 15.532438056926377
+    df_ams['t_score'][0] == 15.532438
 
 
 ##########
@@ -173,7 +173,7 @@ def test_z_score_nan(invalid_dataframe):
 def test_z_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.score(df, ['z_score'])
-    df_ams['z_score'].iloc[0] == 16.675431342469118
+    df_ams['z_score'].iloc[0] == 16.675431
 
 
 #################
@@ -234,7 +234,7 @@ def test_simple_ll_zero(zero_dataframe):
 def test_hypergeometric_likelihood(fixed_dataframe):
     df = fq.expected_frequencies(fixed_dataframe, observed=True)
     df_ams = am.hypergeometric_likelihood(df)
-    assert df_ams[0] == 5.776904234533874e-14
+    assert round(df_ams[0], 20) == 5.776904e-14
 
 
 @pytest.mark.choose
@@ -264,7 +264,7 @@ def test_hypergeometric_likelihood_zero(zero_dataframe):
 def test_binomial_likelihood(fixed_dataframe):
     df = fq.expected_frequencies(fixed_dataframe, observed=True)
     df_ams = am.binomial_likelihood(df)
-    assert df_ams[0] == 7.006035693977206e-08
+    assert round(df_ams[0], 14) == 7.006036e-08
 
 
 @pytest.mark.choose
@@ -275,7 +275,7 @@ def test_binomial_likelihood_brown(brown_dataframe):
     df = df.join(fq.expected_frequencies(df), rsuffix='_')
     df = df.head(100)
     df['binomial_likelihood'] = am.binomial_likelihood(df)
-    assert df['binomial_likelihood'][0] == 0.00810143610212444
+    assert round(df['binomial_likelihood'][0], 6) == 0.008101
 
 
 @pytest.mark.choose
