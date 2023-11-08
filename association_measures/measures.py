@@ -4,7 +4,7 @@ association measures
 """
 
 import numpy as np
-from pandas import concat
+from pandas import concat, merge
 from scipy.stats import norm, beta
 from warnings import warn
 
@@ -95,14 +95,22 @@ def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
     else:
         measures = [ams_all[k] for k in ams_all]
 
+    # reduce df to unique frequency signatures
+    vocab = len(df) if vocab is None else vocab
+    df_reduced = df.drop_duplicates(subset=list(freq_columns)).copy()
+
     # calculate measures
     for measure in measures:
-        df[measure.__name__] = measure(
-            df, disc=disc, discounting=discounting, signed=signed, alpha=alpha,
+        df_reduced[measure.__name__] = measure(
+            df_reduced, disc=disc, discounting=discounting, signed=signed, alpha=alpha,
             correct=correct, boundary=boundary, vocab=vocab, one_sided=one_sided
         )
 
-    # frequency columns?
+    # join on frequency columns (NB: thanks to pandas API, we have to take care of index names ourselves)
+    index_names = ['index'] if df.index.names == [None] else df.index.names
+    df = merge(df.reset_index(), df_reduced, how='left', on=list(freq_columns)).set_index(index_names)
+
+    # keep frequency columns?
     if not freq:
         df = df.drop(freq_columns, axis=1)
     else:

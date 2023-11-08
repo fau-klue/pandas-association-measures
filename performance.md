@@ -1,27 +1,28 @@
 # Performance
 - performance is calculated on a Lenovo X1 Carbon (10th generation, i7)
 - input data are 24,167 observations from [brown.csv](tests/data/brown.csv)
-- we report  for 1000 iterations
+- NB: dataframe contains 4241 duplicated frequency signatures (for which calculation will only be run once since v0.2.7)
+- for each measure, we report time needed for 1000 scorings of the whole dataframe
 
 ## v0.2.7
 - major performance improvement regarding conservative log-ratio with Poisson boundary (factor 50)
 ```
 settings: iterations=1000, df_size=24167
--  0.0874 :: contingency_table
--  1.5254 :: expected_frequencies
--  0.1510 :: z_score
--  0.2906 :: t_score
--  1.7408 :: log_likelihood
--  0.6146 :: simple_ll
--  1.3270 :: min_sensitivity
--  0.2604 :: liddell
--  0.2502 :: dice
--  0.4494 :: log_ratio
--  4.6467 :: binomial_likelihood
--  2.1923 :: conservative_log_ratio
-- 31.2882 :: conservative_log_ratio_poisson
--  0.3840 :: mutual_information
--  0.4441 :: local_mutual_information
+-  0.0871 :: contingency_table
+-  1.5258 :: expected_frequencies
+-  0.1507 :: z_score
+-  0.2899 :: t_score
+-  1.7406 :: log_likelihood
+-  0.6125 :: simple_ll
+-  1.2981 :: min_sensitivity
+-  0.2584 :: liddell
+-  0.2491 :: dice
+-  0.4460 :: log_ratio
+-  4.5788 :: binomial_likelihood
+-  2.1891 :: conservative_log_ratio
+- 29.8616 :: conservative_log_ratio_poisson
+-  0.3702 :: mutual_information
+-  0.4314 :: local_mutual_information
 ```
 
 ## v0.2.6
