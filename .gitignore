@@ -1,6 +1,8 @@
 # Standard Python ignores
 # -----------------------
 
+Pipfile.lock
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

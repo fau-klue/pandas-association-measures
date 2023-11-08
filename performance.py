@@ -70,7 +70,7 @@ codes = [
         'code': 'am.log_ratio(df)'
     },
     # likelihood measures
-    # ~2.5s for a ~25,000 rows on 8 threads
+    # ~2.5s for 1x ~25,000
     # {
     #     'name': 'hypergeometric_likelihood',
     #     'code': 'am.hypergeometric_likelihood(df)'
@@ -84,11 +84,10 @@ codes = [
         'name': 'conservative_log_ratio',
         'code': 'am.conservative_log_ratio(df)'
     },
-    # ~1.5s for a ~25,000 rows on 8 threads
-    # {
-    #     'name': 'conservative_log_ratio_poisson',
-    #     'code': 'am.conservative_log_ratio(df, boundary="poisson")'
-    # },
+    {
+        'name': 'conservative_log_ratio_poisson',
+        'code': 'am.conservative_log_ratio(df, boundary="poisson")'
+    },
     # information theory
     {
         'name': 'mutual_information',
@@ -100,8 +99,9 @@ codes = [
     },
 ]
 
+size = 24167
+print(f'settings: iterations={iterations}, df_size={size}')
 for code in codes:
     res = timeit.timeit(setup=setup, stmt=code['code'], number=iterations)
-    print('Calculate {func} (iterations={iter}, df_size={size}): {res}'.format(
-        iter=iterations, size=24168, res=res, func=code['name']
-    ))
+    func = code['name']
+    print(f'- {res:7.4f} :: {func}')

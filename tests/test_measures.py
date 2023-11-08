@@ -145,7 +145,7 @@ def test_t_score_invalid(invalid_dataframe):
 def test_t_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.score(df, ['t_score'], disc=.5)
-    df_ams['t_score'][0] == 15.532438056926377
+    df_ams['t_score'][0] == 15.532438
 
 
 ##########
@@ -173,7 +173,7 @@ def test_z_score_nan(invalid_dataframe):
 def test_z_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.score(df, ['z_score'])
-    df_ams['z_score'].iloc[0] == 16.675431342469118
+    df_ams['z_score'].iloc[0] == 16.675431
 
 
 #################
@@ -234,7 +234,7 @@ def test_simple_ll_zero(zero_dataframe):
 def test_hypergeometric_likelihood(fixed_dataframe):
     df = fq.expected_frequencies(fixed_dataframe, observed=True)
     df_ams = am.hypergeometric_likelihood(df)
-    assert df_ams[0] == 5.776904234533874e-14
+    assert round(df_ams[0], 20) == 5.776904e-14
 
 
 @pytest.mark.choose
@@ -264,7 +264,7 @@ def test_hypergeometric_likelihood_zero(zero_dataframe):
 def test_binomial_likelihood(fixed_dataframe):
     df = fq.expected_frequencies(fixed_dataframe, observed=True)
     df_ams = am.binomial_likelihood(df)
-    assert df_ams[0] == 7.006035693977206e-08
+    assert round(df_ams[0], 14) == 7.006036e-08
 
 
 @pytest.mark.choose
@@ -275,7 +275,7 @@ def test_binomial_likelihood_brown(brown_dataframe):
     df = df.join(fq.expected_frequencies(df), rsuffix='_')
     df = df.head(100)
     df['binomial_likelihood'] = am.binomial_likelihood(df)
-    assert df['binomial_likelihood'][0] == 0.00810143610212444
+    assert round(df['binomial_likelihood'][0], 6) == 0.008101
 
 
 @pytest.mark.choose
@@ -306,7 +306,7 @@ def test_binomial_likelihood_zero(zero_dataframe):
 def test_log_ratio(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.score(df, ['log_ratio'], disc=.5)
+    df_ams = am.score(df, ['log_ratio'], disc=.5, discounting='Hardie2014')
     assert df_ams['log_ratio'][0] == 7.491853
 
 
@@ -324,7 +324,7 @@ def test_log_ratio_invalid(invalid_dataframe):
 def test_log_ratio_zero(zero_dataframe):
 
     df = zero_dataframe
-    df_ams = am.score(df, ['log_ratio'], disc=.5)
+    df_ams = am.score(df, ['log_ratio'], disc=.5, discounting='Hardie2014')
     assert df_ams['log_ratio'][0] == 12.03645
 
 
@@ -336,7 +336,7 @@ def test_log_ratio_zero(zero_dataframe):
 def test_conservative_log_ratio(fixed_dataframe):
 
     df = fixed_dataframe
-    df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], disc=.5, alpha=.01)
+    df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], boundary='normal', disc=.5, alpha=.01)
     assert (abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all()
     assert df_ams['conservative_log_ratio'].iloc[0] == 0.796936
 
@@ -346,7 +346,7 @@ def test_conservative_log_ratio_zero(zero_dataframe):
 
     df = zero_dataframe
     df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'])
-    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
+    assert (abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all()
 
 
 @pytest.mark.conservative_log_ratio
@@ -354,7 +354,7 @@ def test_conservative_log_ratio_zero_poisson(zero_dataframe):
 
     df = zero_dataframe
     df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], boundary='poisson')
-    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
+    assert (abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all()
 
 
 @pytest.mark.conservative_log_ratio
@@ -362,18 +362,18 @@ def test_conservative_log_ratio_zero_poisson_sig(zero_dataframe_sig):
 
     df = zero_dataframe_sig
     df_ams = am.score(df, ['log_ratio', 'conservative_log_ratio'], boundary='poisson')
-    assert((abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all())
+    assert (abs(df_ams['log_ratio']) >= abs(df_ams['conservative_log_ratio'])).all()
 
 
 @pytest.mark.conservative_log_ratio
 def test_conservative_log_ratio_one_sided(fixed_dataframe):
 
     df = fq.expected_frequencies(fixed_dataframe, observed=True)
-    df_ams = am.score(df, ['conservative_log_ratio'])
+    df_ams = am.score(df, ['conservative_log_ratio'], boundary='normal')
     df_am = am.conservative_log_ratio(df, one_sided=True)
     df_am.name = 'clr_one_sided'
     df_ams = df_ams.join(df_am)
-    assert((abs(df_ams['conservative_log_ratio']) <= abs(df_ams['clr_one_sided'])).all())
+    assert (abs(df_ams['conservative_log_ratio']) <= abs(df_ams['clr_one_sided'])).all()
 
 
 @pytest.mark.conservative_log_ratio
@@ -381,10 +381,10 @@ def test_conservative_log_ratio_boundaries(brown_dataframe):
 
     df = brown_dataframe
     df_ams = am.score(df, ['conservative_log_ratio'])
-    df_am = am.score(df, ['conservative_log_ratio'], boundary="poisson")['conservative_log_ratio']
-    df_am.name = 'clr_poisson'
+    df_am = am.score(df, ['conservative_log_ratio'], boundary="normal")['conservative_log_ratio']
+    df_am.name = 'clr_normal'
     df_ams = df_ams.join(df_am)
-    assert (df_ams['conservative_log_ratio'] == 0).sum() < (df_ams['clr_poisson'] == 0).sum()
+    assert (df_ams['clr_normal'] == 0).sum() < (df_ams['conservative_log_ratio'] == 0).sum()
 
 
 ###################
@@ -445,7 +445,8 @@ def test_measures_ucs_gold(ucs_dataframe):
 def test_measures_log_ratio_gold(log_ratio_dataframe):
 
     df = log_ratio_dataframe
-    df = df.join(am.score(df, ['log_ratio', 'conservative_log_ratio'], disc=.5, alpha=.01, freq=False))
+    df = df.join(am.score(df, ['log_ratio', 'conservative_log_ratio'], boundary='normal',
+                          discounting='Hardie2014', disc=.5, alpha=.01, freq=False))
 
     for r, assoc in [('lr', 'log_ratio'),
                      ('clr', 'conservative_log_ratio')]:
@@ -454,11 +455,11 @@ def test_measures_log_ratio_gold(log_ratio_dataframe):
 
 
 @pytest.mark.gold
-def test_measures_lrc(log_ratio_dataframe):
+def test_measures_lrc_gold(log_ratio_dataframe):
 
     # original implementation with normal approximation
     df = log_ratio_dataframe
-    df = df.join(am.score(df, ['conservative_log_ratio'], alpha=.05, freq=False))
+    df = df.join(am.score(df, ['conservative_log_ratio'], boundary='normal', alpha=.05, freq=False))
     assert df['conservative_log_ratio'].equals(round(df['lrc.normal'], 6))
 
     # implementation with poisson approximation

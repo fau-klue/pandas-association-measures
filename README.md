@@ -136,7 +136,7 @@ The following association measures are currently implemented (v0.2.2):
   - **Liddell** (`liddell`)
   - **minimum sensitivity** (`min_sensitivity`)
   - [**log-ratio**](http://cass.lancs.ac.uk/log-ratio-an-informal-introduction/) (`log_ratio`)
-    - parameter: `disc`
+    - parameters: `disc`, `discounting`
   - **Dice coefficient** (`dice`)
 - information theory:
   - **mutual information** (`mutual_information`)

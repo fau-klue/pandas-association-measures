@@ -4,7 +4,7 @@ association measures
 """
 
 import numpy as np
-from pandas import concat
+from pandas import concat, merge
 from scipy.stats import norm, beta
 from warnings import warn
 
@@ -47,8 +47,9 @@ def list_measures():
 
 def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
           freq=True, per_million=True, digits=6, disc=.001,
-          signed=True, alpha=.001, correct='Bonferroni',
-          boundary='normal', vocab=None, one_sided=False):
+          discounting='Walter1975', signed=True, alpha=.001,
+          correct='Bonferroni', boundary='poisson', vocab=None,
+          one_sided=False):
     """Calculate a list of association measures on columns of df. Defaults
     to all available (and numerically stable) measures.
 
@@ -67,6 +68,7 @@ def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
 
     Further keyword arguments will be passed to the respective measures:
     :param float disc: discounting (or smoothing) parameter for O11 == 0 (and O21 == 0)
+    :param str discounting: LR: discounting strategy (Walter1975 vs. Hardie2014)
     :param bool signed: enforce negative values for rows with O11 < E11?
     :param float alpha: CLR: significance level
     :param str boundary: CLR: exact CI boundary of [poisson] distribution or [normal] approximation?
@@ -93,14 +95,22 @@ def score(df, measures=None, f1=None, N=None, N1=None, N2=None,
     else:
         measures = [ams_all[k] for k in ams_all]
 
+    # reduce df to unique frequency signatures
+    vocab = len(df) if vocab is None else vocab
+    df_reduced = df.drop_duplicates(subset=list(freq_columns)).copy()
+
     # calculate measures
     for measure in measures:
-        df[measure.__name__] = measure(
-            df, disc=disc, signed=signed, alpha=alpha,
+        df_reduced[measure.__name__] = measure(
+            df_reduced, disc=disc, discounting=discounting, signed=signed, alpha=alpha,
             correct=correct, boundary=boundary, vocab=vocab, one_sided=one_sided
         )
 
-    # frequency columns?
+    # join on frequency columns (NB: thanks to pandas API, we have to take care of index names ourselves)
+    index_names = ['index'] if df.index.names == [None] else df.index.names
+    df = merge(df.reset_index(), df_reduced, how='left', on=list(freq_columns)).set_index(index_names)
+
+    # keep frequency columns?
     if not freq:
         df = df.drop(freq_columns, axis=1)
     else:
@@ -263,20 +273,25 @@ def dice(df, **kwargs):
     return am
 
 
-def log_ratio(df, disc=.5, **kwargs):
+def log_ratio(df, disc=.5, discounting='Walter1975', **kwargs):
     """Calculate log-ratio, i.e. binary logarithm of relative risk
 
     :param DataFrame df: pd.DataFrame with columns O11, O21, R1, R2
     :param float disc: discounting (or smoothing) parameter for O11 == 0 and O21 == 0
+    :param str discounting: discounting according to Walter1975 or Hardie2014?
     :return: log-ratio
     :rtype: pd.Series
     """
 
-    # questionable discounting according to Hardie (2014)
-    O11_disc = df['O11'].where(df['O11'] != 0, disc)
-    O21_disc = df['O21'].where(df['O21'] != 0, disc)
+    if discounting == 'Walter1975':
+        # mathematically sensible discounting according to Walter (1975)
+        am = np.log2(((df['O11'] + disc) / (df['R1'] + disc)) / ((df['O21'] + disc) / (df['R2'] + disc)))
 
-    am = np.log2((O11_disc / O21_disc) / (df['R1'] / df['R2']))
+    elif discounting == 'Hardie2014':
+        # questionable discounting according to Hardie (2014)
+        O11_disc = df['O11'].where(df['O11'] != 0, disc)
+        O21_disc = df['O21'].where(df['O21'] != 0, disc)
+        am = np.log2((O11_disc / O21_disc) / (df['R1'] / df['R2']))
 
     return am
 
@@ -335,34 +350,6 @@ def binomial_likelihood(df, **kwargs):
 # CONSERVATIVE ESTIMATES #
 ##########################
 
-def get_poisson_ci_boundary(alpha, O11, R1, O21, R2):
-    """
-    Get the lower (if O11 / R1 >= O21 / R2) or upper (else) bound of
-    the CI of a Poisson distribution
-
-    :param float alpha: sig. level
-    :param int O11:
-    :param int R1:
-    :param int O21:
-    :param int R2:
-    """
-
-    if O11 == O21 == 0:
-        return 0
-
-    if (O11 / R1) >= (O21 / R2):
-        lower = beta.ppf(alpha, O11, O21 + 1)
-        boundary = max(np.log2((R2 / R1) * lower / (1 - lower)), 0)
-    else:
-        upper = beta.ppf(1 - alpha, O11 + 1, O21)
-        boundary = min(np.log2((R2 / R1) * upper / (1 - upper)), 0)
-
-    return boundary
-
-
-BOUNDARY = np.vectorize(get_poisson_ci_boundary, otypes=[float])
-
-
 def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
                            correct='Bonferroni', vocab=None,
                            one_sided=False, **kwargs):
@@ -407,7 +394,21 @@ def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
 
     # Poisson approximation (Evert 2022)
     if boundary == 'poisson':
-        clrr = BOUNDARY(alpha, df['O11'], df['R1'], df['O21'], df['R2'])
+
+        # only calculate where_lower
+        lower = beta.ppf(alpha, df['O11'], df['O21'] + 1)
+        lower_boundary = np.log2((df['R2'] / df['R1']) * lower / (1 - lower)).clip(lower=0)
+
+        # only calculate where_upper
+        upper = beta.ppf(1 - alpha, df['O11'] + 1, df['O21'])
+        upper_boundary = np.log2((df['R2'] / df['R1']) * upper / (1 - upper)).clip(upper=0)
+
+        # combine, set to 0 where (df['O11'] == 0) & (df['O12'] == 0)
+        clrr = lower_boundary.where(
+            (df['O11'] / df['R1']) >= (df['O21'] / df['R2']),
+            upper_boundary
+        )
+        clrr = clrr.where(~((df['O11'] == 0) & (df['O12'] == 0)), 0).fillna(0)
 
     # Normal approximation (Hardie 2014)
     elif boundary == 'normal':
