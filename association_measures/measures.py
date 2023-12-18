@@ -3,14 +3,14 @@ association measures
 
 """
 
+from warnings import warn
+
 import numpy as np
 from pandas import concat, merge
-from scipy.stats import norm, beta
-from warnings import warn
+from scipy.stats import beta, norm
 
 from .binomial import choose
 from .frequencies import expected_frequencies, observed_frequencies
-
 
 CHOOSE = np.vectorize(choose)
 
