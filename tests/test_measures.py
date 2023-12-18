@@ -370,7 +370,7 @@ def test_conservative_log_ratio_one_sided(fixed_dataframe):
 
     df = fq.expected_frequencies(fixed_dataframe, observed=True)
     df_ams = am.score(df, ['conservative_log_ratio'], boundary='normal')
-    df_am = am.conservative_log_ratio(df, one_sided=True)
+    df_am = am.conservative_log_ratio(df, one_sided=True, boundary='normal')
     df_am.name = 'clr_one_sided'
     df_ams = df_ams.join(df_am)
     assert (abs(df_ams['conservative_log_ratio']) <= abs(df_ams['clr_one_sided'])).all()

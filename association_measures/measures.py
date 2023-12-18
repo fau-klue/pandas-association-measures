@@ -20,7 +20,6 @@ def list_measures():
 
     :return: dictionary of measures
     :rtype: dict
-
     """
 
     return {
@@ -144,8 +143,7 @@ def calculate_measures(df, measures=None, freq=False, per_million=True, digits=N
 ###############################
 
 def z_score(df, **kwargs):
-    """
-    Calculate z-score
+    """Calculate z-score
 
     :param DataFrame df: DataFrame with columns O11 and E11
     :return: z-score
@@ -158,8 +156,7 @@ def z_score(df, **kwargs):
 
 
 def t_score(df, disc=.001, **kwargs):
-    """
-    Calculate t-score
+    """Calculate t-score
 
     :param DataFrame df: pd.DataFrame with columns O11 and E11
     :param float disc: discounting (or smoothing) parameter for O11 == 0
@@ -174,8 +171,7 @@ def t_score(df, disc=.001, **kwargs):
 
 
 def log_likelihood(df, signed=True, **kwargs):
-    """
-    Calculate log-likelihood
+    """Calculate log-likelihood
 
     :param DataFrame df: pd.DataFrame with columns O11..O22, E11..E22
     :param bool signed: return negative values for rows with O11 < E11?
@@ -204,8 +200,7 @@ def log_likelihood(df, signed=True, **kwargs):
 
 
 def simple_ll(df, signed=True, **kwargs):
-    """
-    Calculate simple log-likelihood
+    """Calculate simple log-likelihood
 
     :param DataFrame df: pd.DataFrame with columns O11, E11
     :param bool signed: return negative values for rows with O11 < E11?
@@ -213,8 +208,7 @@ def simple_ll(df, signed=True, **kwargs):
     :rtype: pd.Series
     """
 
-    # NB: discounting will not have any effect:
-    #     term will be multiplied by original Oij = 0
+    # NB: discounting will not have any effect: term will be multiplied by original Oij = 0
     O11_disc = df['O11'].where(df['O11'] != 0, 1)
 
     log_term = df['O11'] * np.log(O11_disc / df['E11'])
@@ -260,8 +254,7 @@ def liddell(df, **kwargs):
 
 
 def dice(df, **kwargs):
-    """
-    Calculate Dice coefficient
+    """Calculate Dice coefficient
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21
     :return: dice
@@ -301,8 +294,7 @@ def log_ratio(df, disc=.5, discounting='Walter1975', **kwargs):
 #######################
 
 def hypergeometric_likelihood(df, **kwargs):
-    """
-    Calculate hypergeometric-likelihood
+    """Calculate hypergeometric-likelihood
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
     :return: hypergeometric-likelihood
@@ -324,8 +316,7 @@ def hypergeometric_likelihood(df, **kwargs):
 
 
 def binomial_likelihood(df, **kwargs):
-    """
-    Calculate binomial-likelihood
+    """Calculate binomial-likelihood
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22, E11, N
     :return: binomial-likelihood
@@ -350,13 +341,12 @@ def binomial_likelihood(df, **kwargs):
 # CONSERVATIVE ESTIMATES #
 ##########################
 
-def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
+def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='poisson',
                            correct='Bonferroni', vocab=None,
                            one_sided=False, **kwargs):
-    """
-    Calculate conservative log-ratio, i.e. the binary logarithm of the
+    """Calculate conservative log-ratio, i.e. the binary logarithm of the
     lower bound of the confidence interval of relative risk at the
-    (Bonferroni-corrected) confidence level.
+    (Bonferroni-corrected) significance level.
 
     :param DataFrame df: pd.DataFrame with columns O11, O12, O21, O22
     :param float disc: discounting (or smoothing) parameter for O11 == 0 and O21 == 0
@@ -368,7 +358,6 @@ def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
 
     :return: conservative log-ratio
     :rtype: pd.Series
-
     """
 
     # correction of alpha for two-sided tests
@@ -394,15 +383,12 @@ def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
 
     # Poisson approximation (Evert 2022)
     if boundary == 'poisson':
-
         # only calculate where_lower
         lower = beta.ppf(alpha, df['O11'], df['O21'] + 1)
         lower_boundary = np.log2((df['R2'] / df['R1']) * lower / (1 - lower)).clip(lower=0)
-
         # only calculate where_upper
         upper = beta.ppf(1 - alpha, df['O11'] + 1, df['O21'])
         upper_boundary = np.log2((df['R2'] / df['R1']) * upper / (1 - upper)).clip(upper=0)
-
         # combine, set to 0 where (df['O11'] == 0) & (df['O12'] == 0)
         clrr = lower_boundary.where(
             (df['O11'] / df['R1']) >= (df['O21'] / df['R2']),
@@ -434,8 +420,7 @@ def conservative_log_ratio(df, disc=.5, alpha=.001, boundary='normal',
 ######################
 
 def mutual_information(df, disc=.001, **kwargs):
-    """
-    Calculate Mutual Information
+    """Calculate Mutual Information
 
     :param DataFrame df: pd.DataFrame with columns O11 and E11
     :param float disc: discounting (or smoothing) parameter for O11 == 0
@@ -450,16 +435,14 @@ def mutual_information(df, disc=.001, **kwargs):
 
 
 def local_mutual_information(df, **kwargs):
-    """
-    Calculate Local Mutual Information
+    """Calculate Local Mutual Information
 
     :param DataFrame df: pd.DataFrame with columns O11 and E11
-    :return: mutual information
+    :return: local mutual information
     :rtype: pd.Series
     """
 
-    # NB: discounting will not have any effect:
-    #     term will be multiplied by original Oij = 0
+    # NB: discounting will not have any effect: term will be multiplied by original Oij = 0
     O11_disc = df['O11'].where(df['O11'] != 0, 1)
     am = df['O11'] * np.log10(O11_disc / df['E11'])
 
