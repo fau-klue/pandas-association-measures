@@ -82,7 +82,7 @@ codes = [
     # conservative estimates
     {
         'name': 'conservative_log_ratio',
-        'code': 'am.conservative_log_ratio(df)'
+        'code': 'am.conservative_log_ratio(df, boundary="normal")'
     },
     {
         'name': 'conservative_log_ratio_poisson',
