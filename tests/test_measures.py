@@ -109,7 +109,7 @@ def test_dice_invalid(invalid_dataframe):
 def test_dice_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.score(df, ['dice'])
-    df_ams['dice'][0] == 0.16831229174945742
+    assert df_ams['dice'].iloc[0] == 0.168312
 
 
 ##########
@@ -145,7 +145,7 @@ def test_t_score_invalid(invalid_dataframe):
 def test_t_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.score(df, ['t_score'], disc=.5)
-    df_ams['t_score'][0] == 15.532438
+    assert df_ams['t_score'].iloc[0] == 15.532438
 
 
 ##########
@@ -173,7 +173,7 @@ def test_z_score_nan(invalid_dataframe):
 def test_z_score_zero(zero_dataframe):
     df = zero_dataframe
     df_ams = am.score(df, ['z_score'])
-    df_ams['z_score'].iloc[0] == 16.675431
+    assert df_ams['z_score'].iloc[0] == 16.675431
 
 
 #################
@@ -295,7 +295,7 @@ def test_binomial_likelihood_brown_overflow(brown_dataframe):
 def test_binomial_likelihood_zero(zero_dataframe):
     df = fq.expected_frequencies(zero_dataframe, observed=True)
     ams = am.binomial_likelihood(df)
-    assert isnan(ams[0])
+    assert isnan(ams.iloc[0])
 
 
 #############
@@ -307,7 +307,7 @@ def test_log_ratio(fixed_dataframe):
 
     df = fixed_dataframe
     df_ams = am.score(df, ['log_ratio'], disc=.5, discounting='Hardie2014')
-    assert df_ams['log_ratio'][0] == 7.491853
+    assert df_ams['log_ratio'].iloc[0] == 7.491853
 
 
 @pytest.mark.log_ratio
@@ -325,7 +325,7 @@ def test_log_ratio_zero(zero_dataframe):
 
     df = zero_dataframe
     df_ams = am.score(df, ['log_ratio'], disc=.5, discounting='Hardie2014')
-    assert df_ams['log_ratio'][0] == 12.03645
+    assert df_ams['log_ratio'].iloc[0] == 12.03645
 
 
 ##########################
@@ -408,7 +408,7 @@ def test_liddell(fixed_dataframe):
 
     df = fixed_dataframe
     df_ams = am.score(df, ['liddell'])
-    assert df_ams['liddell'][0] == 1
+    assert df_ams['liddell'].iloc[0] == 1
 
 
 @pytest.mark.liddell
@@ -416,7 +416,7 @@ def test_liddell_zero(zero_dataframe):
 
     df = fq.expected_frequencies(zero_dataframe, observed=True)
     df_ams = am.score(df, ['liddell'])
-    assert df_ams['liddell'][0] == 0.143858
+    assert df_ams['liddell'].iloc[0] == 0.143858
 
 
 ########
@@ -516,4 +516,4 @@ def test_calculate_measures(zero_dataframe):
     df = zero_dataframe
     with pytest.deprecated_call():
         df_ams = am.calculate_measures(df, ['dice'])
-    df_ams['dice'][0] == 0.16831229174945742
+    df_ams['dice'].iloc[0] == 0.16831229174945742
