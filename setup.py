@@ -2,9 +2,7 @@
 
 import os
 import sys
-from setuptools import find_packages, Command
-from distutils.core import setup
-from distutils.extension import Extension
+from setuptools import find_packages, setup, Command, Extension
 
 # Package meta-data.
 NAME = 'association-measures'
