@@ -1,5 +1,6 @@
 import association_measures.frequencies as fq
 import association_measures.measures as am
+from association_measures.grids import topography
 
 
 def test_frequencies(ucs_dataframe):
@@ -56,3 +57,8 @@ def test_measures(ucs_dataframe):
 
     df_ams = am.score(df, measures=['log_likelihood'], signed=False, freq=False)
     print(df_ams.head())
+
+
+def test_topography():
+
+    print(topography())
