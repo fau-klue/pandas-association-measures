@@ -15,7 +15,8 @@ REQUIRES_PYTHON = '>=3.8'
 REQUIRED = [
     'wheel',
     'pandas',
-    'scipy'
+    'scipy',
+    'rbo'
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
