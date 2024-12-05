@@ -14,9 +14,9 @@ AUTHOR = 'Philipp Heinrich & Markus Opolka'
 REQUIRES_PYTHON = '>=3.8'
 REQUIRED = [
     'wheel',
-    'pandas',
-    'scipy',
-    'rbo'
+    'pandas>=2.0,<3.0',
+    'scipy>=1.10.0,<2.0',
+    'rbo>=0.1.3,<0.2'
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
