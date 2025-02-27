@@ -11,10 +11,11 @@ URL = 'https://github.com/fau-klue/pandas-association-measures'
 EMAIL = 'philipp.heinrich@fau.de'
 AUTHOR = 'Philipp Heinrich & Markus Opolka'
 
-REQUIRES_PYTHON = '>=3.8'
+REQUIRES_PYTHON = '>=3.9'
 REQUIRED = [
     'wheel',
     'pandas>=2.0,<3.0',
+    'numpy>=2.0,<3.0',
     'scipy>=1.10.0,<2.0',
     'rbo>=0.1.3,<0.2'
 ]
@@ -98,11 +99,11 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Programming Language :: Cython',
     ],
 )
