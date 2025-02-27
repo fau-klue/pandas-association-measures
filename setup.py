@@ -17,7 +17,7 @@ REQUIRED = [
     'pandas>=2.2.2,<3.0',
     'numpy>=2.0,<3.0',
     'scipy>=1.13.0,<2.0',
-    'rbo>=0.1.3,<0.2'
+    # 'rbo>=0.1.3,<0.2'
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
