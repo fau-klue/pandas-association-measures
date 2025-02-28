@@ -1,0 +1,18 @@
+association_measures	name	abbreviation	category
+O11	observed frequency	obs.	raw
+E11	expected frequency	exp.	raw
+ipm	observed instances per million	obs. (ipm)	raw
+ipm_expected	expected instances per million	exp. (ipm)	raw
+conservative_log_ratio	Conservative Log Ratio	LRC	conservative estimates
+log_likelihood	Log-Likelihood Ratio	LLR	asymptotic hypothesis tests
+z_score	z-score	z-score	asymptotic hypothesis tests
+t_score	t-score	t-score	asymptotic hypothesis tests
+simple_LL	simple Log-Likelihood Ratio	simple LLR	asymptotic hypothesis tests
+dice	Dice	Dice	point estimates of association strength
+log_ratio	Log Ratio	LR	point estimates of association strength
+min_sensitivity	Minimum Sensitivity	MS	point estimates of association strength
+liddel	Liddell	Liddell	point estimates of association strength
+mutual_information	Mutual Information	MI	information theory
+local_mutual_information	Local Mutual Information	LMI	information theory
+hypergeometric_likelihood	Hypergeometric Likelihood	HL	likelihood measures
+binomial_likelihood	Binomial Likelihood	BL	likelihood measures
