@@ -4,6 +4,8 @@ RBO implementation based on https://github.com/changyaochen/rbo/blob/master/rbo/
 
 """
 
+import numpy as np
+
 
 def rbo(S, T, k=None, p=.95, ext=True, verbose=False):
     """
@@ -50,3 +52,34 @@ def rbo(S, T, k=None, p=.95, ext=True, verbose=False):
 
     rbo_score = AO[-1] + A[-1] * p**k if ext and p < 1 else AO[-1]
     return max(0.0, min(1.0, rbo_score))
+
+
+def gwets_ac1(S, T):
+    """
+    Compute Gwet's AC1 inter-rater agreement coefficient.
+
+    Args:
+        S (list or np.ndarray): Ratings from the first rater.
+        T (list or np.ndarray): Ratings from the second rater.
+
+    Returns:
+        float: Gwet's AC1 coefficient.
+    """
+    rater1, rater2 = np.array(S), np.array(T)
+    assert len(rater1) == len(rater2), "Both raters must have the same number of ratings."
+
+    unique_labels = np.unique(np.concatenate((rater1, rater2)))
+
+    # Compute observed agreement (Po)
+    Po = np.mean(rater1 == rater2)
+
+    # Compute expected agreement (Pe)
+    label_probs = {label: (np.sum(rater1 == label) + np.sum(rater2 == label)) / (2 * len(rater1)) for label in unique_labels}
+    Pe = sum(p**2 for p in label_probs.values())
+
+    # Compute Gwet's AC1
+    if Pe == 1:
+        return 1.0  # Perfect agreement
+
+    AC1 = (Po - Pe) / (1 - Pe)
+    return AC1
