@@ -1,10 +1,8 @@
 """comparison of ranked lists
 
-rbo implementation based on https://github.com/changyaochen/rbo/blob/master/rbo/rbo.py
+RBO implementation based on https://github.com/changyaochen/rbo/blob/master/rbo/rbo.py
 
 """
-
-from tqdm import tqdm
 
 
 def rbo(S, T, k=None, p=.95, ext=True, verbose=False):
@@ -43,7 +41,7 @@ def rbo(S, T, k=None, p=.95, ext=True, verbose=False):
     A[0] = 1 if S[0] == T[0] else 0
     AO[0] = weights[0] * A[0] if p != 1.0 else A[0]
 
-    for d in tqdm(range(1, k), disable=not verbose):
+    for d in range(1, k):
         overlap = int(S[d] in T_running) + int(T[d] in S_running) + int(S[d] == T[d])
         A[d] = ((A[d - 1] * d) + overlap) / (d + 1)
         AO[d] = AO[d - 1] + weights[d] * A[d] if p != 1.0 else ((AO[d - 1] * d) + A[d]) / (d + 1)
