@@ -1,7 +1,7 @@
-from association_measures.comparisons import rbo, gwets_ac1
+from association_measures.comparisons import rbo, gwets_ac1, cohens_kappa
 
 
-def test_rbo(log_ratio_dataframe, rbo_dataframe):
+def test_rbo_gold(log_ratio_dataframe, rbo_dataframe):
 
     df = log_ratio_dataframe
     rbo_dataframe = rbo_dataframe.loc[rbo_dataframe['p'] > 0]
@@ -19,6 +19,16 @@ def test_rbo(log_ratio_dataframe, rbo_dataframe):
     # close enough for now
 
 
+def test_rbo(log_ratio_dataframe):
+
+    df = log_ratio_dataframe
+    left = df.sort_values(by='lrc.positive', ascending=False).head(50).index.to_list()
+    right = df.sort_values(by='lrc.normal', ascending=False).head(50).index.to_list()
+
+    r = rbo(left, right, .95)
+    print(r[2])
+
+
 def test_gwets_ac1(log_ratio_dataframe):
 
     df = log_ratio_dataframe
@@ -27,3 +37,13 @@ def test_gwets_ac1(log_ratio_dataframe):
 
     ac1 = gwets_ac1(left, right)
     print(ac1)
+
+
+def test_cohens_kappa(log_ratio_dataframe):
+
+    df = log_ratio_dataframe
+    left = df.sort_values(by='lrc.positive', ascending=False).head(50).index.to_list()
+    right = df.sort_values(by='lrc.normal', ascending=False).head(50).index.to_list()
+
+    kappa = cohens_kappa(left, right)
+    print(kappa)

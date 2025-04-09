@@ -6,7 +6,6 @@ RBO implementation based on https://github.com/dlukes/rbo
 
 
 import math
-import numpy as np
 
 
 def set_at_depth(lst, depth):
@@ -128,6 +127,9 @@ def rbo(list1, list2, p, k=None):
     if not 0 < p < 1:
         raise ValueError("The ``p`` parameter must be between 0 and 1.")
 
+    if len(set(list1).intersection(set(list2))) == 0:
+        return 0.0, 0.0, 0.0
+
     depth = k if k else min(len(list1), len(list2))
     list1 = list1[:min(len(list1), depth)]
     list2 = list2[:min(len(list2), depth)]
@@ -137,34 +139,71 @@ def rbo(list1, list2, p, k=None):
     return rbo_min(*args), rbo_res(*args), rbo_ext(*args)
 
 
-def gwets_ac1(left, right):
-    """
-    Compute Gwet's AC1 inter-rater agreement coefficient between to ranked lists left and right.
+def contingency(left, right, candidates):
+
+    left = set(left)
+    right = set(right)
+
+    a = len(left.intersection(right))
+    b = len(left - right)
+    c = len(right - left)
+    d = len(candidates - left - right)
+
+    return a, b, c, d
+
+
+def cohens_kappa(left, right, candidates=None):
+    """Compute Cohen's kappa between to ranked lists left and right.
 
     Args:
         left (list or np.ndarray): First ranked list.
         right (list or np.ndarray): Second ranked list.
+        candidates (list or np.ndarray): Superset of left and right.
+
+    Returns:
+        float: Cohen's kappa.
+    """
+    if candidates is None:
+        candidates = set(left).union(set(right))
+    a, b, c, d = contingency(left, right, candidates)
+    N = a + b + c + d
+    if N == 0:
+        return None  # avoid division by zero
+
+    ao = (a + d) / N
+
+    ae = 1 / (N ** 2) * ((a+c) * (a+b) + (b+d) * (c+d))
+
+    kappa = (ao - ae) / (1 - ae)
+
+    return kappa
+
+
+def gwets_ac1(left, right, candidates=None):
+    """Compute Gwet's AC1 inter-rater agreement coefficient between to ranked lists left and right.
+
+    Args:
+        left (list or np.ndarray): First ranked list.
+        right (list or np.ndarray): Second ranked list.
+        candidates (list or np.ndarray): Superset of left and right.
 
     Returns:
         float: Gwet's AC1 coefficient.
     """
+    if candidates is None:
+        candidates = set(left).union(set(right))
+    a, b, c, d = contingency(left, right, candidates)
+    N = a + b + c + d
+    if N == 0:
+        return None  # avoid division by zero
 
-    left, right = np.array(left), np.array(right)
-    if len(left) != len(right):
-        raise ValueError("Both lists must have the same number of items.")
+    ao = (a + d) / N
+    q = 1 / 2 / N * (a + c + a + d)
+    ae = 2 * q * (1 - q)
 
-    unique_labels = np.unique(np.concatenate((left, right)))
-
-    # Compute observed agreement
-    ao = np.mean(left == right)
-
-    # Compute expected agreement
-    label_probs = {label: (np.sum(left == label) + np.sum(right == label)) / (2 * len(left)) for label in unique_labels}
-    ae = sum(p**2 for p in label_probs.values())
-
-    # Compute Gwet's AC1
     if ae == 1:
-        return 1.0  # Perfect agreement
+        return None  # avoid division by zero in denominator
 
     ac1 = (ao - ae) / (1 - ae)
+
     return ac1
