@@ -114,7 +114,7 @@ def rbo_ext(list1, list2, p):
     return term1 + term2
 
 
-def rbo(list1, list2, p, k=None):
+def rbo(left, right, p, k=None):
     """Complete RBO analysis (lower bound, residual, point estimate).
 
     ``list`` arguments should be already correctly sorted iterables and each
@@ -127,19 +127,22 @@ def rbo(list1, list2, p, k=None):
     if not 0 < p < 1:
         raise ValueError("The ``p`` parameter must be between 0 and 1.")
 
-    if len(set(list1).intersection(set(list2))) == 0:
+    if len(set(left).intersection(set(right))) == 0:
         return 0.0, 0.0, 0.0
 
-    depth = k if k else min(len(list1), len(list2))
-    list1 = list1[:min(len(list1), depth)]
-    list2 = list2[:min(len(list2), depth)]
+    depth = k if k else min(len(left), len(right))
+    left = left[:min(len(left), depth)]
+    right = right[:min(len(right), depth)]
 
-    args = (list1, list2, p)
+    args = (left, right, p)
 
     return rbo_min(*args), rbo_res(*args), rbo_ext(*args)
 
 
 def contingency(left, right, candidates):
+    """Convert two lists and their superset into contingency counts.
+
+    """
 
     left = set(left)
     right = set(right)
