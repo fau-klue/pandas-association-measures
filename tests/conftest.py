@@ -127,3 +127,13 @@ def brown_dataframe():
     df = pd.read_csv("tests/data/brown.csv", index_col=0)
 
     return df
+
+
+@pytest.fixture(scope='function')
+def rbo_dataframe():
+    """RBO calculations on log-ratio-gold calculated using gespeR.
+
+    """
+    df = pd.read_csv("tests/data/rbo.tsv", sep="\t")
+
+    return df
